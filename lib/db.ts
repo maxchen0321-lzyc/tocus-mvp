@@ -1,5 +1,5 @@
 import { hasSupabaseConfig } from "./env";
-import { supabaseClient } from "./supabase/client";
+import { supabaseBrowser } from "./supabase";
 import type { Comment } from "./types";
 
 const COLLECTIONS_KEY = "tocus_collections";
@@ -31,7 +31,8 @@ export async function getCollections(anonymousId: string, userId: string | null)
       userId ? item.user_id === userId : item.anonymous_id === anonymousId
     );
   }
-  const query = supabaseClient.from("collections").select("*");
+
+  const query = supabaseBrowser.from("collections").select("*");
   const { data } =
     userId == null
       ? await query.eq("anonymous_id", anonymousId)
@@ -62,7 +63,7 @@ export async function addCollection(
     return;
   }
 
-  await supabaseClient.from("collections").insert(record);
+  await supabaseBrowser.from("collections").insert(record);
 }
 
 export async function removeCollection(
@@ -79,7 +80,7 @@ export async function removeCollection(
     return;
   }
 
-  const query = supabaseClient.from("collections").delete().match({ topic_id: topicId });
+  const query = supabaseBrowser.from("collections").delete().match({ topic_id: topicId });
   if (userId == null) {
     await query.eq("anonymous_id", anonymousId).is("user_id", null);
   } else {
@@ -112,7 +113,7 @@ export async function saveStance(
     return;
   }
 
-  await supabaseClient.from("stances").insert(record);
+  await supabaseBrowser.from("stances").insert(record);
 }
 
 export async function listComments(parentType: Comment["parentType"], parentId: string) {
@@ -123,7 +124,7 @@ export async function listComments(parentType: Comment["parentType"], parentId: 
     return list.filter((comment) => comment.parentType === parentType && comment.parentId === parentId);
   }
 
-  const { data } = await supabaseClient
+  const { data } = await supabaseBrowser
     .from("comments")
     .select("*")
     .match({ parent_type: parentType, parent_id: parentId })
@@ -151,7 +152,7 @@ export async function createComment(comment: Comment) {
     return;
   }
 
-  await supabaseClient.from("comments").insert({
+  await supabaseBrowser.from("comments").insert({
     id: comment.id,
     parent_type: comment.parentType,
     parent_id: comment.parentId,

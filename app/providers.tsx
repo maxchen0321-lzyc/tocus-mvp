@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabaseClient } from "@/lib/supabase/client";
+import { supabaseBrowser } from "@/lib/supabase";
 import { hasSupabaseConfig } from "@/lib/env";
 import { getAnonymousId } from "@/lib/identity";
 
@@ -30,15 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setIsLoading(false);
       return () => {
-        active = false;
-      };
-    }
-    supabaseClient.auth.getSession().then(({ data }) => {
+        active = fa
+    supabaseBrowser.auth.getSession().then(({ data }) => {
       if (!active) return;
       setUser(data.session?.user ?? null);
       setIsLoading(false);
     });
-    const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -51,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     if (!hasSupabaseConfig) return;
-    await supabaseClient.auth.signOut();
+    await supabaseBrowser.auth.signOut();
   };
 
   const value = useMemo(

@@ -1,5 +1,4 @@
 import { hasSupabaseConfig } from "./env";
-import { supabaseClient } from "./supabase/client";
 import type { EventName } from "./types";
 
 type EventPayload = {
@@ -23,15 +22,18 @@ export async function trackEvent(name: EventName, payload: EventPayload) {
     created_at: new Date().toISOString()
   };
 
-  if (!hasSupabaseConfig) {
-    if (typeof window !== "undefined") {
-      const existing = window.localStorage.getItem(LOCAL_EVENTS_KEY);
-      const list = existing ? (JSON.parse(existing) as typeof event[]) : [];
-      list.push(event);
-      window.localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(list));
-    }
-    return;
+  if (typeof window !== "undefined") {
+    const existing = window.localStorage.getItem(LOCAL_EVENTS_KEY);
+    const list = existing ? (JSON.parse(existing) as typeof event[]) : [];
+    list.push(event);
+    window.localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(list));
   }
 
-  await supabaseClient.from("events").insert(event);
+  if (hasSupabaseConfig) {
+    await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event)
+    });
+  }
 }

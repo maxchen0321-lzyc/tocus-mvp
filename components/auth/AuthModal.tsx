@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabaseClient } from "@/lib/supabase/client";
+import { supabaseBrowser } from "@/lib/supabase";
 import { useAuth } from "@/app/providers";
 import { hasSupabaseConfig } from "@/lib/env";
 import { trackEvent } from "@/lib/events";
@@ -30,7 +30,8 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
     }
     setLoading(true);
     setError(null);
-    const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
+    
+    const { data, error: signInError } = await supabaseBrowser.auth.signInWithPassword({
       email,
       password
     });
@@ -56,7 +57,7 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
     }
     setLoading(true);
     setError(null);
-    const { data, error: signUpError } = await supabaseClient.auth.signUp({
+    const { data, error: signUpError } = await supabaseBrowser.auth.signUp({
       email,
       password
     });
