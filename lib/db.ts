@@ -31,13 +31,57 @@ export async function getCollections(anonymousId: string, userId: string | null)
       userId ? item.user_id === userId : item.anonymous_id === anonymousId
     );
   }
-
   const query = supabaseBrowser.from("collections").select("*");
   const { data } =
     userId == null
       ? await query.eq("anonymous_id", anonymousId)
       : await query.or(`user_id.eq.${userId},anonymous_id.eq.${anonymousId}`);
   return data ?? [];
+}
+
+export async function mergeCollections(anonymousId: string, userId: string) {
+  if (!hasSupabaseConfig) {
+    if (typeof window === "undefined") return;
+    const existing = window.localStorage.getItem(COLLECTIONS_KEY);
+    const list = existing ? (JSON.parse(existing) as CollectionRecord[]) : [];
+    const updated = list.map((item) =>
+      item.anonymous_id === anonymousId ? { ...item, user_id: userId } : item
+    );
+    const deduped = updated.filter(
+      (item, index, self) =>
+        index ===
+        self.findIndex(
+          (other) =>
+            other.topic_id === item.topic_id &&
+            other.user_id === item.user_id &&
+            other.anonymous_id === item.anonymous_id
+        )
+    );
+    window.localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(deduped));
+    return;
+  }
+
+  const { data: anonCollections } = await supabaseBrowser
+    .from("collections")
+    .select("*")
+    .eq("anonymous_id", anonymousId)
+    .is("user_id", null);
+  const { data: userCollections } = await supabaseBrowser
+    .from("collections")
+    .select("*")
+    .eq("user_id", userId);
+
+  const userTopicIds = new Set((userCollections ?? []).map((item) => item.topic_id));
+  for (const record of anonCollections ?? []) {
+    if (userTopicIds.has(record.topic_id)) {
+      await supabaseBrowser.from("collections").delete().match({ id: record.id });
+    } else {
+      await supabaseBrowser
+        .from("collections")
+        .update({ user_id: userId })
+        .match({ id: record.id });
+    }
+  }
 }
 
 export async function addCollection(

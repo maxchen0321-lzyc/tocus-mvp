@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { topics, articles } from "@/lib/data";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "../providers";
-import TopicCard from "@/components/TopicCard";
+import SwipeCard from "@/components/SwipeCard";
 import TopBar from "@/components/TopBar";
 import StanceModal from "@/components/StanceModal";
 import CollectionDrawer from "@/components/CollectionDrawer";
@@ -18,6 +18,7 @@ export default function HomeClient() {
   const [stanceOpen, setStanceOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const impressions = useRef(new Set<string>());
 
   const currentTopic = topics[index];
 
@@ -30,6 +31,8 @@ export default function HomeClient() {
 
   useEffect(() => {
     if (!currentTopic || anonymousId === "pending") return;
+    if (impressions.current.has(currentTopic.id)) return;
+    impressions.current.add(currentTopic.id);
     trackEvent("topic_impression", {
       userId: user?.id ?? null,
       anonymousId,
@@ -73,7 +76,7 @@ export default function HomeClient() {
       (article) => article.topicId === currentTopic.id && article.stance === opposite
     );
     if (target) {
-      router.push(`/article/${currentTopic.id}/${target.id}?stance=${stance}`);
+      router.push(`/read?topicId=${currentTopic.id}&stance=${stance}`);
     }
   };
 
@@ -87,21 +90,13 @@ export default function HomeClient() {
       <TopBar onOpenCollection={() => setCollectionOpen(true)} />
       {currentTopic ? (
         <div className="space-y-4">
-          <TopicCard topic={currentTopic} onClick={handleOpenTopic} />
-          <div className="flex gap-3 text-sm">
-            <button
-              className="flex-1 rounded-xl border border-white/20 py-3"
-              onClick={() => handleSwipe("left")}
-            >
-              左滑：不喜歡
-            </button>
-            <button
-              className="flex-1 rounded-xl bg-white/10 py-3"
-              onClick={() => handleSwipe("right")}
-            >
-              右滑：{isCollected ? "已收藏" : "喜歡"}
-            </button>
-          </div>
+          <SwipeCard
+            topic={currentTopic}
+            onOpen={handleOpenTopic}
+            onSwipeLeft={() => handleSwipe("left")}
+            onSwipeRight={() => handleSwipe("right")}
+            isCollected={isCollected}
+          />
           <p className="text-xs text-white/50">
             目前卡片 {index + 1}/{topics.length}
           </p>

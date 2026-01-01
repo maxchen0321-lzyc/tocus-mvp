@@ -30,7 +30,6 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
     }
     setLoading(true);
     setError(null);
-    
     const { data, error: signInError } = await supabaseBrowser.auth.signInWithPassword({
       email,
       password

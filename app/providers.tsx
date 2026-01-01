@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabaseBrowser } from "@/lib/supabase";
 import { hasSupabaseConfig } from "@/lib/env";
 import { getAnonymousId } from "@/lib/identity";
+import { mergeCollections } from "@/lib/db";
 
 type AuthContextValue = {
   user: User | null;
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [anonymousId, setAnonymousId] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
+  const [mergedForUser, setMergedForUser] = useState<string | null>(null);
 
   useEffect(() => {
     setAnonymousId(getAnonymousId());
@@ -30,7 +32,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setIsLoading(false);
       return () => {
-        active = fa
+        active = false;
+      };
+    }
     supabaseBrowser.auth.getSession().then(({ data }) => {
       if (!active) return;
       setUser(data.session?.user ?? null);
@@ -46,6 +50,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.id || anonymousId === "pending") return;
+    if (mergedForUser === user.id) return;
+    mergeCollections(anonymousId, user.id).then(() => {
+      setMergedForUser(user.id);
+    });
+  }, [user?.id, anonymousId, mergedForUser]);
 
   const signOut = async () => {
     if (!hasSupabaseConfig) return;
