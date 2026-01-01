@@ -76,7 +76,7 @@ export default function HomeClient() {
       (article) => article.topicId === currentTopic.id && article.stance === opposite
     );
     if (target) {
-      router.push(`/article/${currentTopic.id}/${target.id}?stance=${stance}`);
+      router.push(`/read?topicId=${currentTopic.id}&stance=${stance}`);
     }
   };
 
