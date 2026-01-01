@@ -3,18 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { articles, topics } from "@/lib/data";
-import { createComment, listComments, saveStance } from "@/lib/db";
+import { saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "@/app/providers";
-import type { Comment } from "@/lib/types";
 import StanceModal from "@/components/StanceModal";
+import CommentSection from "@/components/CommentSection";
 
 export default function ReadPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, anonymousId } = useAuth();
-  const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [finalStanceOpen, setFinalStanceOpen] = useState(false);
 
@@ -52,11 +50,6 @@ export default function ReadPage() {
     });
   }, [article?.id, anonymousId, user?.id]);
 
-  useEffect(() => {
-    if (!article) return;
-    listComments("article", article.id).then(setComments);
-  }, [article?.id]);
-
   const handleNextSame = async () => {
     if (!sameStanceArticle || !topic || anonymousId === "pending") return;
     await trackEvent("article_next_same", {
@@ -77,28 +70,6 @@ export default function ReadPage() {
       articleId: oppositeArticle.id
     });
     router.push(`/read?topicId=${topic.id}&stance=${article?.stance ?? stanceParam}`);
-  };
-
-  const handleCreateComment = async () => {
-    if (!article || !commentText.trim() || anonymousId === "pending") return;
-    const comment: Comment = {
-      id: crypto.randomUUID(),
-      parentType: "article",
-      parentId: article.id,
-      userId: user?.id ?? null,
-      anonymousId,
-      content: commentText.trim(),
-      createdAt: new Date().toISOString()
-    };
-    await createComment(comment);
-    setComments((prev) => [comment, ...prev]);
-    setCommentText("");
-    await trackEvent("comment_create", {
-      userId: user?.id ?? null,
-      anonymousId,
-      topicId: article.topicId,
-      articleId: article.id
-    });
   };
 
   const handleReadComplete = async () => {
@@ -145,46 +116,13 @@ export default function ReadPage() {
         {article.content}
       </article>
       {commentsOpen ? (
-        <section className="glass rounded-2xl p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">留言區</h2>
-            <button
-              className="text-xs text-white/60"
-              onClick={() => setCommentsOpen(false)}
-            >
-              收合
-            </button>
-          </div>
-          <div className="mt-3 space-y-2">
-            <textarea
-              className="w-full rounded-xl bg-white/10 p-3 text-sm"
-              rows={3}
-              placeholder="留下你的想法"
-              value={commentText}
-              onChange={(event) => setCommentText(event.target.value)}
-            />
-            <button
-              className="rounded-xl bg-white/10 px-4 py-2 text-sm"
-              onClick={handleCreateComment}
-            >
-              送出留言
-            </button>
-          </div>
-          <div className="mt-4 space-y-3">
-            {comments.length === 0 ? (
-              <p className="text-xs text-white/50">尚無留言</p>
-            ) : (
-              comments.map((comment) => (
-                <div key={comment.id} className="rounded-xl border border-white/10 p-3 text-xs">
-                  <p className="text-white/70">{comment.content}</p>
-                  <p className="mt-2 text-[10px] text-white/40">
-                    {new Date(comment.createdAt).toLocaleString("zh-TW")}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+        <CommentSection
+          parentType="article"
+          parentId={article.id}
+          topicId={article.topicId}
+          articleId={article.id}
+          onClose={() => setCommentsOpen(false)}
+        />
       ) : null}
       <div className="sticky bottom-4 mt-auto space-y-3">
         <button className="w-full rounded-xl border border-white/20 py-3 text-sm" onClick={handleNextSame}>
