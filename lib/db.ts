@@ -31,6 +31,7 @@ export async function getCollections(anonymousId: string, userId: string | null)
       userId ? item.user_id === userId : item.anonymous_id === anonymousId
     );
   }
+
   const query = supabaseBrowser.from("collections").select("*");
   const { data } =
     userId == null

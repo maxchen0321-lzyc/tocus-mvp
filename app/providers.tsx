@@ -30,9 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setIsLoading(false);
       return () => {
-        active = false;
-      };
-    }
+        active = fa
     supabaseBrowser.auth.getSession().then(({ data }) => {
       if (!active) return;
       setUser(data.session?.user ?? null);
