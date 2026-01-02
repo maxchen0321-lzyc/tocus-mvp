@@ -14,6 +14,7 @@ export type Article = {
   title: string;
   content: string;
   author: string;
+  createdAt: string;
 };
 
 export type Comment = {

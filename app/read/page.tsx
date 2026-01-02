@@ -8,6 +8,7 @@ import { trackEvent } from "@/lib/events";
 import { useAuth } from "@/app/providers";
 import StanceModal from "@/components/StanceModal";
 import CommentSection from "@/components/CommentSection";
+import { formatDateTime } from "@/lib/utils";
 
 export default function ReadPage() {
   const searchParams = useSearchParams();
@@ -110,6 +111,7 @@ export default function ReadPage() {
         <p className="text-xs text-white/50">
           {article.author} · {article.stance === "supporting" ? "支持方" : "反方"}
         </p>
+        <p className="text-xs text-white/50">撰寫時間：{formatDateTime(article.createdAt)}</p>
       </div>
       <article className="glass rounded-2xl p-5 text-sm leading-7 text-white/90">
         {article.content}
