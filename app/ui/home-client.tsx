@@ -9,14 +9,12 @@ import { useAuth } from "../providers";
 import SwipeCard from "@/components/SwipeCard";
 import TopBar from "@/components/TopBar";
 import StanceModal from "@/components/StanceModal";
-import CollectionDrawer from "@/components/CollectionDrawer";
 
 export default function HomeClient() {
   const router = useRouter();
   const { user, anonymousId } = useAuth();
   const [index, setIndex] = useState(0);
   const [stanceOpen, setStanceOpen] = useState(false);
-  const [collectionOpen, setCollectionOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const impressions = useRef(new Set<string>());
 
@@ -91,7 +89,7 @@ export default function HomeClient() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
-      <TopBar onOpenCollection={() => setCollectionOpen(true)} />
+      <TopBar />
       {currentTopic ? (
         <div className="space-y-4">
           <SwipeCard
@@ -116,7 +114,6 @@ export default function HomeClient() {
         onConfirm={handleConfirmStance}
         onClose={() => setStanceOpen(false)}
       />
-      <CollectionDrawer open={collectionOpen} onClose={() => setCollectionOpen(false)} />
     </div>
   );
 }

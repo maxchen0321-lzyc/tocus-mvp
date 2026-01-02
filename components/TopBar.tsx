@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { trackEvent } from "@/lib/events";
 import { useAuth } from "@/app/providers";
 import AuthModal from "./auth/AuthModal";
 
-type Props = {
-  onOpenCollection: () => void;
-};
-
-export default function TopBar({ onOpenCollection }: Props) {
-  const { user, signOut, isLoading } = useAuth();
+export default function TopBar() {
+  const { user, signOut, isLoading, anonymousId } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
 
   return (
@@ -49,12 +46,20 @@ export default function TopBar({ onOpenCollection }: Props) {
           >
             Metrics
           </Link>
-          <button
+          <Link
             className="rounded-full border border-white/20 px-3 py-1 text-xs"
-            onClick={onOpenCollection}
+            href="/collections"
+            onClick={() => {
+              if (anonymousId === "pending") return;
+              trackEvent("collection_open", {
+                userId: user?.id ?? null,
+                anonymousId,
+                metadata: { entry: "header" }
+              });
+            }}
           >
             收藏
-          </button>
+          </Link>
         </div>
       </div>
       <AuthModal
