@@ -40,7 +40,10 @@ export default function HomeClient() {
     });
   }, [currentTopic?.id, anonymousId, user?.id]);
 
-  const handleSwipe = async (direction: "left" | "right") => {
+  const handleSwipe = async (
+    direction: "left" | "right",
+    meta?: { dx: number; threshold: number; inputType: "touch" | "mouse" }
+  ) => {
     if (!currentTopic || anonymousId === "pending") return;
     if (direction === "right") {
       await addCollection(currentTopic.id, anonymousId, user?.id ?? null);
@@ -51,7 +54,8 @@ export default function HomeClient() {
     await trackEvent(direction === "right" ? "topic_swipe_right" : "topic_swipe_left", {
       userId: user?.id ?? null,
       anonymousId,
-      topicId: currentTopic.id
+      topicId: currentTopic.id,
+      metadata: meta
     });
     setIndex((prev) => (prev + 1) % topics.length);
   };
@@ -93,8 +97,8 @@ export default function HomeClient() {
           <SwipeCard
             topic={currentTopic}
             onOpen={handleOpenTopic}
-            onSwipeLeft={() => handleSwipe("left")}
-            onSwipeRight={() => handleSwipe("right")}
+            onSwipeLeft={(meta) => handleSwipe("left", meta)}
+            onSwipeRight={(meta) => handleSwipe("right", meta)}
             isCollected={isCollected}
           />
           <p className="text-xs text-white/50">
