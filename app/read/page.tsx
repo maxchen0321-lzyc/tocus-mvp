@@ -13,7 +13,6 @@ export default function ReadPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, anonymousId } = useAuth();
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const [finalStanceOpen, setFinalStanceOpen] = useState(false);
 
   const topicId = searchParams.get("topicId") ?? "";
@@ -115,35 +114,26 @@ export default function ReadPage() {
       <article className="glass rounded-2xl p-5 text-sm leading-7 text-white/90">
         {article.content}
       </article>
-      {commentsOpen ? (
-        <CommentSection
-          parentType="article"
-          parentId={article.id}
-          topicId={article.topicId}
-          articleId={article.id}
-          onClose={() => setCommentsOpen(false)}
-        />
-      ) : null}
-      <div className="sticky bottom-4 mt-auto space-y-3">
-        <button className="w-full rounded-xl border border-white/20 py-3 text-sm" onClick={handleNextSame}>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <button className="flex-1 rounded-xl border border-white/20 py-3 text-sm" onClick={handleNextSame}>
           繼續看同一方文章
         </button>
         <button
-          className="w-full rounded-xl border border-white/20 py-3 text-sm"
+          className="flex-1 rounded-xl border border-white/20 py-3 text-sm"
           onClick={handleNextOpposite}
         >
-          看反方文章
+          看另一方文章
         </button>
-        <button
-          className="w-full rounded-xl border border-white/20 py-3 text-sm"
-          onClick={() => setCommentsOpen(true)}
-        >
-          留言區
-        </button>
-        <button className="w-full rounded-xl bg-white/10 py-3 text-sm" onClick={handleReadComplete}>
+        <button className="flex-1 rounded-xl bg-white/10 py-3 text-sm" onClick={handleReadComplete}>
           結束閱讀
         </button>
       </div>
+      <CommentSection
+        parentType="article"
+        parentId={article.id}
+        topicId={article.topicId}
+        articleId={article.id}
+      />
       <StanceModal
         open={finalStanceOpen}
         title="閱讀後立場更新"

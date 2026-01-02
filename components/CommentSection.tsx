@@ -11,15 +11,13 @@ type Props = {
   parentId: string;
   topicId?: string;
   articleId?: string;
-  onClose?: () => void;
 };
 
 export default function CommentSection({
   parentType,
   parentId,
   topicId,
-  articleId,
-  onClose
+  articleId
 }: Props) {
   const { user, anonymousId } = useAuth();
   const [commentText, setCommentText] = useState("");
@@ -54,14 +52,7 @@ export default function CommentSection({
 
   return (
     <section className="glass rounded-2xl p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">留言區</h2>
-        {onClose ? (
-          <button className="text-xs text-white/60" onClick={onClose}>
-            收合
-          </button>
-        ) : null}
-      </div>
+      <h2 className="text-sm font-semibold">留言區</h2>
       <div className="mt-3 space-y-2">
         <textarea
           className="w-full rounded-xl bg-white/10 p-3 text-sm"
