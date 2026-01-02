@@ -80,7 +80,7 @@ export default function HomeClient() {
       (article) => article.topicId === currentTopic.id && article.stance === opposite
     );
     if (target) {
-      router.push(`/read?topicId=${currentTopic.id}&stance=${stance}`);
+      router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
     }
   };
 

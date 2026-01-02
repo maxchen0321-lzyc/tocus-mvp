@@ -18,6 +18,7 @@ export default function ReadPage() {
 
   const topicId = searchParams.get("topicId") ?? "";
   const stanceParam = searchParams.get("stance") ?? "supporting";
+  const entry = searchParams.get("entry") ?? null;
   const oppositeStance = stanceParam === "supporting" ? "opposing" : "supporting";
 
   const topic = topics.find((item) => item.id === topicId);
@@ -46,7 +47,8 @@ export default function ReadPage() {
       userId: user?.id ?? null,
       anonymousId,
       topicId: article.topicId,
-      articleId: article.id
+      articleId: article.id,
+      metadata: entry ? { entry } : undefined
     });
   }, [article?.id, anonymousId, user?.id]);
 
