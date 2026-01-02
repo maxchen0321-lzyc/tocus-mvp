@@ -18,7 +18,9 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
   const { anonymousId } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
@@ -28,8 +30,17 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
       setError("請先在 .env.local 設定 Supabase keys");
       return;
     }
+    if (!email) {
+      setError("請輸入 Email");
+      return;
+    }
+    if (!email) {
+      setError("請輸入 Email");
+      return;
+    }
     setLoading(true);
     setError(null);
+    setNotice(null);
     const { data, error: signInError } = await supabaseBrowser.auth.signInWithPassword({
       email,
       password
@@ -54,8 +65,17 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
       setError("請先在 .env.local 設定 Supabase keys");
       return;
     }
+    if (password.length < 8) {
+      setError("密碼至少 8 碼");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("確認密碼不一致");
+      return;
+    }
     setLoading(true);
     setError(null);
+    setNotice(null);
     const { data, error: signUpError } = await supabaseBrowser.auth.signUp({
       email,
       password
@@ -69,10 +89,12 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
       await trackEvent("auth_sign_up", {
         userId: data.user?.id ?? null,
         anonymousId,
-        metadata: { method: "password" }
+        metadata: { method: "password", email_confirmation: true }
       });
     }
-    onClose();
+    setNotice("已寄送確認郵件，請至信箱完成驗證後再登入");
+    setPassword("");
+    setConfirmPassword("");
   };
 
   return (
@@ -113,7 +135,17 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
                 onChange={(event) => setPassword(event.target.value)}
               />
             </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-white/60">Confirm Password</span>
+              <input
+                type="password"
+                className="w-full rounded-xl bg-white/10 px-3 py-2"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
+            </label>
             {error ? <p className="text-xs text-red-300">{error}</p> : null}
+            {notice ? <p className="text-xs text-emerald-300">{notice}</p> : null}
             <div className="flex gap-2">
               <button
                 className="flex-1 rounded-xl bg-white/10 px-4 py-2"
@@ -130,6 +162,14 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
                 註冊
               </button>
             </div>
+            {notice ? (
+              <button
+                className="w-full rounded-xl border border-white/20 px-4 py-2 text-xs"
+                onClick={() => setNotice(null)}
+              >
+                返回登入
+              </button>
+            ) : null}
           </div>
         )}
       </div>
