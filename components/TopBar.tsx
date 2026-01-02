@@ -11,18 +11,37 @@ type Props = {
 
 export default function TopBar({ onOpenCollection }: Props) {
   const { user, signOut, isLoading } = useAuth();
-  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
 
   return (
     <>
       <div className="flex items-center justify-between">
-        <button
-          className="rounded-full border border-white/20 px-3 py-1 text-xs"
-          onClick={() => setAuthOpen(true)}
-          disabled={isLoading}
-        >
-          {user ? "帳號" : "登入"}
-        </button>
+        {user ? (
+          <button
+            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            onClick={() => setAuthMode("login")}
+            disabled={isLoading}
+          >
+            帳號
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <button
+              className="rounded-full border border-white/20 px-3 py-1 text-xs"
+              onClick={() => setAuthMode("login")}
+              disabled={isLoading}
+            >
+              登入
+            </button>
+            <button
+              className="rounded-full border border-white/20 px-3 py-1 text-xs"
+              onClick={() => setAuthMode("signup")}
+              disabled={isLoading}
+            >
+              註冊
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <Link
             className="rounded-full border border-white/20 px-3 py-1 text-xs"
@@ -39,8 +58,9 @@ export default function TopBar({ onOpenCollection }: Props) {
         </div>
       </div>
       <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
+        open={authMode !== null}
+        mode={authMode ?? "login"}
+        onClose={() => setAuthMode(null)}
         user={user}
         onSignOut={signOut}
       />

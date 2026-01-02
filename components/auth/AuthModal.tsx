@@ -9,12 +9,13 @@ import { trackEvent } from "@/lib/events";
 
 type Props = {
   open: boolean;
+  mode: "login" | "signup";
   onClose: () => void;
   user: User | null;
   onSignOut: () => Promise<void>;
 };
 
-export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
+export default function AuthModal({ open, mode, onClose, user, onSignOut }: Props) {
   const { anonymousId } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,16 +25,34 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
+  if (user) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="glass w-full max-w-sm rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">帳號</h2>
+            <button className="text-sm text-white/60" onClick={onClose}>
+              關閉
+            </button>
+          </div>
+          <div className="mt-4 space-y-3 text-sm">
+            <p>已登入：{user.email}</p>
+            <button className="w-full rounded-xl bg-white/10 px-4 py-2" onClick={onSignOut}>
+              登出
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = async () => {
     if (!hasSupabaseConfig) {
       setError("請先在 .env.local 設定 Supabase keys");
       return;
     }
-    if (!email) {
-      setError("請輸入 Email");
-      return;
-    }
+    if (mode !== "login") return;
+    if (loading) return;
     if (!email) {
       setError("請輸入 Email");
       return;
@@ -63,6 +82,12 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
   const handleSignUp = async () => {
     if (!hasSupabaseConfig) {
       setError("請先在 .env.local 設定 Supabase keys");
+      return;
+    }
+    if (mode !== "signup") return;
+    if (loading) return;
+    if (!email) {
+      setError("請輸入 Email");
       return;
     }
     if (password.length < 8) {
@@ -101,40 +126,30 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="glass w-full max-w-sm rounded-2xl p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">帳號</h2>
+          <h2 className="text-lg font-semibold">{mode === "login" ? "登入" : "註冊"}</h2>
           <button className="text-sm text-white/60" onClick={onClose}>
             關閉
           </button>
         </div>
-        {user ? (
-          <div className="mt-4 space-y-3 text-sm">
-            <p>已登入：{user.email}</p>
-            <button
-              className="w-full rounded-xl bg-white/10 px-4 py-2"
-              onClick={onSignOut}
-            >
-              登出
-            </button>
-          </div>
-        ) : (
-          <div className="mt-4 space-y-3 text-sm">
-            <label className="block space-y-1">
-              <span className="text-xs text-white/60">Email</span>
-              <input
-                className="w-full rounded-xl bg-white/10 px-3 py-2"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-xs text-white/60">Password</span>
-              <input
-                type="password"
-                className="w-full rounded-xl bg-white/10 px-3 py-2"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
+        <div className="mt-4 space-y-3 text-sm">
+          <label className="block space-y-1">
+            <span className="text-xs text-white/60">Email</span>
+            <input
+              className="w-full rounded-xl bg-white/10 px-3 py-2"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-white/60">Password</span>
+            <input
+              type="password"
+              className="w-full rounded-xl bg-white/10 px-3 py-2"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </label>
+          {mode === "signup" ? (
             <label className="block space-y-1">
               <span className="text-xs text-white/60">Confirm Password</span>
               <input
@@ -144,34 +159,35 @@ export default function AuthModal({ open, onClose, user, onSignOut }: Props) {
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
             </label>
-            {error ? <p className="text-xs text-red-300">{error}</p> : null}
-            {notice ? <p className="text-xs text-emerald-300">{notice}</p> : null}
-            <div className="flex gap-2">
-              <button
-                className="flex-1 rounded-xl bg-white/10 px-4 py-2"
-                onClick={handleLogin}
-                disabled={loading}
-              >
-                登入
-              </button>
-              <button
-                className="flex-1 rounded-xl bg-white/10 px-4 py-2"
-                onClick={handleSignUp}
-                disabled={loading}
-              >
-                註冊
-              </button>
-            </div>
-            {notice ? (
-              <button
-                className="w-full rounded-xl border border-white/20 px-4 py-2 text-xs"
-                onClick={() => setNotice(null)}
-              >
-                返回登入
-              </button>
-            ) : null}
-          </div>
-        )}
+          ) : null}
+          {error ? <p className="text-xs text-red-300">{error}</p> : null}
+          {notice ? <p className="text-xs text-emerald-300">{notice}</p> : null}
+          {mode === "login" ? (
+            <button
+              className="w-full rounded-xl bg-white/10 px-4 py-2"
+              onClick={handleLogin}
+              disabled={loading}
+            >
+              登入
+            </button>
+          ) : (
+            <button
+              className="w-full rounded-xl bg-white/10 px-4 py-2"
+              onClick={handleSignUp}
+              disabled={loading}
+            >
+              註冊
+            </button>
+          )}
+          {notice ? (
+            <button
+              className="w-full rounded-xl border border-white/20 px-4 py-2 text-xs"
+              onClick={onClose}
+            >
+              回到登入
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
