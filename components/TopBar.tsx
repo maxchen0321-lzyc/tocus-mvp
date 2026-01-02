@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/app/providers";
 import AuthModal from "./auth/AuthModal";
@@ -22,12 +23,20 @@ export default function TopBar({ onOpenCollection }: Props) {
         >
           {user ? "帳號" : "登入"}
         </button>
-        <button
-          className="rounded-full border border-white/20 px-3 py-1 text-xs"
-          onClick={onOpenCollection}
-        >
-          收藏
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            href="/admin/metrics"
+          >
+            Metrics
+          </Link>
+          <button
+            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            onClick={onOpenCollection}
+          >
+            收藏
+          </button>
+        </div>
       </div>
       <AuthModal
         open={authOpen}
