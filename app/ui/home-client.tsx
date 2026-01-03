@@ -13,7 +13,7 @@ import StanceModal from "@/components/StanceModal";
 
 export default function HomeClient() {
   const router = useRouter();
-  const { user, anonymousId, sessionReady, authError } = useAuth();
+  const { user, anonymousId, authReady, authError, supabaseHost } = useAuth();
   const [index, setIndex] = useState(0);
   const [stanceOpen, setStanceOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
@@ -23,14 +23,14 @@ export default function HomeClient() {
   const currentTopic = topicsForSwipe[index];
 
   useEffect(() => {
-    if (!sessionReady) return;
+    if (!authReady) return;
     getCollections(user?.id ?? null).then((result) => {
       setCollectionIds(result.data.map((item) => item.topic_id));
       setCollectionDebug(
         `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
       );
     });
-  }, [sessionReady, user?.id]);
+  }, [authReady, user?.id]);
 
   useEffect(() => {
     if (!currentTopic || anonymousId === "pending") return;
@@ -47,7 +47,7 @@ export default function HomeClient() {
     direction: "left" | "right",
     meta?: { dx: number; threshold: number; inputType: "touch" | "mouse" }
   ) => {
-    if (!currentTopic || !sessionReady) return;
+    if (!currentTopic || !authReady) return;
     if (direction === "right") {
       const result = await addCollection(currentTopic.id, user?.id ?? null);
       if (result) {
@@ -111,7 +111,13 @@ export default function HomeClient() {
             目前卡片 {index + 1}/{topicsForSwipe.length}
           </p>
           <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
-          {authError ? (
+          <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
+          <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
+          <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
+          <p className="text-[10px] text-white/40">
+            SupabaseHost: {supabaseHost ?? "unknown"}
+          </p>
+          {authError && !user ? (
             <p className="text-[10px] text-red-300">AuthError: {authError}</p>
           ) : null}
         </div>

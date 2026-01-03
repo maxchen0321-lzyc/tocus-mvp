@@ -9,22 +9,22 @@ import { useAuth } from "@/app/providers";
 import { formatDate } from "@/lib/utils";
 
 export default function CollectionsPage() {
-  const { user, anonymousId, sessionReady, authError } = useAuth();
+  const { user, anonymousId, authReady, authError, supabaseHost } = useAuth();
   const [items, setItems] = useState<string[]>([]);
   const [debug, setDebug] = useState<string>("pending");
 
   useEffect(() => {
-    if (!sessionReady) return;
+    if (!authReady) return;
     getCollections(user?.id ?? null).then((result) => {
       setItems(result.data.map((item) => item.topic_id));
       setDebug(
         `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
       );
     });
-  }, [sessionReady, user?.id]);
+  }, [authReady, user?.id]);
 
   const handleRemove = async (topicId: string) => {
-    if (!sessionReady) return;
+    if (!authReady) return;
     const result = await removeCollection(topicId, user?.id ?? null);
     if (result) {
       setItems(result.data.map((item) => item.topic_id));
@@ -50,9 +50,15 @@ export default function CollectionsPage() {
         </Link>
       </div>
       <p className="text-[10px] text-white/40">ColDebug: {debug}</p>
+      <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
       <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
       <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-      {authError ? <p className="text-[10px] text-red-300">AuthError: {authError}</p> : null}
+      <p className="text-[10px] text-white/40">
+        SupabaseHost: {supabaseHost ?? "unknown"}
+      </p>
+      {authError && !user ? (
+        <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+      ) : null}
       {list.length === 0 ? (
         <div className="glass rounded-2xl p-4 text-white/60">尚未收藏任何議題</div>
       ) : (

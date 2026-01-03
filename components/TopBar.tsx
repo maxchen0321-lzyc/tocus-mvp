@@ -7,7 +7,7 @@ import { useAuth } from "@/app/providers";
 import AuthModal from "./auth/AuthModal";
 
 export default function TopBar() {
-  const { user, signOut, isLoading, anonymousId, sessionReady } = useAuth();
+  const { user, signOut, isLoading, anonymousId, authReady } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
 
   return (
@@ -50,7 +50,7 @@ export default function TopBar() {
             className="rounded-full border border-white/20 px-3 py-1 text-xs"
             href="/collections"
             onClick={() => {
-              if (!sessionReady || anonymousId === "pending") return;
+              if (!authReady || anonymousId === "pending") return;
               trackEvent("collection_open", {
                 userId: user?.id ?? null,
                 anonymousId,
