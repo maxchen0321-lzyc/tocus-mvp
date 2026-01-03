@@ -1,5 +1,6 @@
 import type { Topic as UiTopic } from "./types";
 import type { Topic as NotionTopic } from "./notion-types";
+import { articles } from "./data";
 import { mockTopics } from "./mock-topics";
 
 const summaryFromContext = (context: string) => {
@@ -18,4 +19,8 @@ export function mapNotionTopicToUi(topic: NotionTopic): UiTopic {
   };
 }
 
-export const topicsForSwipe: UiTopic[] = mockTopics.map(mapNotionTopicToUi);
+const topicIdSet = new Set(articles.map((article) => article.topicId));
+
+export const topicsForSwipe: UiTopic[] = mockTopics
+  .map(mapNotionTopicToUi)
+  .filter((topic) => topicIdSet.has(topic.id));
