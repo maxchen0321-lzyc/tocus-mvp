@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { articles } from "@/lib/data";
-import { topicsForSwipe, topicsForSwipeMeta } from "@/lib/topic-adapter";
+import {
+  getOppositeArticleForTopic,
+  getSwipeTopics,
+  getTopicSourceDiagnostics
+} from "@/lib/topic-source";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "../providers";
@@ -19,8 +22,10 @@ export default function HomeClient() {
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [collectionDebug, setCollectionDebug] = useState<string>("pending");
   const impressions = useRef(new Set<string>());
+  const swipeTopics = getSwipeTopics();
+  const topicDiagnostics = getTopicSourceDiagnostics();
 
-  const currentTopic = topicsForSwipe[index];
+  const currentTopic = swipeTopics[index];
 
   useEffect(() => {
     if (!authReady) return;
@@ -63,7 +68,7 @@ export default function HomeClient() {
       topicId: currentTopic.id,
       metadata: meta
     });
-    setIndex((prev) => (prev + 1) % topicsForSwipe.length);
+    setIndex((prev) => (prev + 1) % swipeTopics.length);
   };
 
   const handleOpenTopic = () => {
@@ -81,10 +86,7 @@ export default function HomeClient() {
       metadata: { value }
     });
     const stance = value >= 0 ? "supporting" : "opposing";
-    const opposite = stance === "supporting" ? "opposing" : "supporting";
-    const target = articles.find(
-      (article) => article.topicId === currentTopic.id && article.stance === opposite
-    );
+    const target = getOppositeArticleForTopic(currentTopic.id, stance);
     if (target) {
       router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
     }
@@ -95,11 +97,22 @@ export default function HomeClient() {
     [currentTopic, collectionIds]
   );
 
-  const showDebug = process.env.NODE_ENV !== "production";
+  const showDebug =
+    process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
       <TopBar />
+      {showDebug ? (
+        <p className="text-[10px] text-white/50">
+          DataSource: {topicDiagnostics.source} · TopicsCount: {topicDiagnostics.topicsCount} ·
+          AdapterCountBeforeFilter: {topicDiagnostics.adapterCountBeforeFilter} ·
+          AdapterCountAfterFilter: {topicDiagnostics.adapterCountAfterFilter} · Limit:{" "}
+          {topicDiagnostics.limit ?? "none"} · Truncated:{" "}
+          {topicDiagnostics.truncated ? "true" : "false"} · Reason:{" "}
+          {topicDiagnostics.truncatedReason ?? "none"}
+        </p>
+      ) : null}
       {currentTopic ? (
         <div className="space-y-4">
           <SwipeCard
@@ -110,16 +123,10 @@ export default function HomeClient() {
             isCollected={isCollected}
           />
           <p className="text-xs text-white/50">
-            目前卡片 {index + 1}/{topicsForSwipe.length}
+            目前卡片 {index + 1}/{swipeTopics.length}
           </p>
           {showDebug ? (
             <>
-              <p className="text-[10px] text-white/40">
-                TopicsDebug: source={topicsForSwipeMeta.source} count=
-                {topicsForSwipeMeta.topicsCount} notionCount={topicsForSwipeMeta.notionCount}{" "}
-                filteredCount={topicsForSwipeMeta.filteredCount} localCount=
-                {topicsForSwipeMeta.localCount} error={topicsForSwipeMeta.error ?? "none"}
-              </p>
               <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
               <p className="text-[10px] text-white/40">
                 AuthReady: {authReady ? "true" : "false"}

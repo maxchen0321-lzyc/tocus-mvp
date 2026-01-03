@@ -1,7 +1,5 @@
 import type { Topic as UiTopic } from "./types";
 import type { Topic as NotionTopic } from "./notion-types";
-import { articles, topics as localTopics } from "./data";
-import { mockTopics } from "./mock-topics";
 
 const summaryFromContext = (context: string) => {
   if (context.length <= 48) return context;
@@ -19,19 +17,13 @@ export function mapNotionTopicToUi(topic: NotionTopic): UiTopic {
   };
 }
 
-const topicIdSet = new Set(articles.map((article) => article.topicId));
+export const adaptNotionTopics = (topics: NotionTopic[]) => {
+  const mapped = topics.map(mapNotionTopicToUi);
+  const filtered = mapped.filter((topic) => topic.id && topic.title);
 
-const mappedNotionTopics = mockTopics.map(mapNotionTopicToUi);
-const filteredNotionTopics = mappedNotionTopics.filter((topic) => topicIdSet.has(topic.id));
-
-export const topicsForSwipe: UiTopic[] =
-  filteredNotionTopics.length > 0 ? filteredNotionTopics : localTopics;
-
-export const topicsForSwipeMeta = {
-  source: filteredNotionTopics.length > 0 ? "notion" : "local",
-  topicsCount: topicsForSwipe.length,
-  notionCount: mappedNotionTopics.length,
-  filteredCount: filteredNotionTopics.length,
-  localCount: localTopics.length,
-  error: filteredNotionTopics.length > 0 ? null : "notion_topics_without_articles"
+  return {
+    topics: filtered,
+    adapterCountBeforeFilter: mapped.length,
+    adapterCountAfterFilter: filtered.length
+  };
 };
