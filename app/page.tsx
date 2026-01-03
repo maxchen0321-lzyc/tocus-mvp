@@ -1,5 +1,5 @@
-import TopicsListClient from "./ui/topics-list-client";
+import HomeClient from "./ui/home-client";
 
 export default function HomePage() {
-  return <TopicsListClient />;
+  return <HomeClient />;
 }

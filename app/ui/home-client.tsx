@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { topics, articles } from "@/lib/data";
+import { articles } from "@/lib/data";
+import { topicsForSwipe } from "@/lib/topic-adapter";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "../providers";
@@ -19,7 +20,7 @@ export default function HomeClient() {
   const [collectionDebug, setCollectionDebug] = useState<string>("pending");
   const impressions = useRef(new Set<string>());
 
-  const currentTopic = topics[index];
+  const currentTopic = topicsForSwipe[index];
 
   useEffect(() => {
     if (!sessionReady) return;
@@ -62,7 +63,7 @@ export default function HomeClient() {
       topicId: currentTopic.id,
       metadata: meta
     });
-    setIndex((prev) => (prev + 1) % topics.length);
+    setIndex((prev) => (prev + 1) % topicsForSwipe.length);
   };
 
   const handleOpenTopic = () => {
@@ -107,7 +108,7 @@ export default function HomeClient() {
             isCollected={isCollected}
           />
           <p className="text-xs text-white/50">
-            目前卡片 {index + 1}/{topics.length}
+            目前卡片 {index + 1}/{topicsForSwipe.length}
           </p>
           <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
           {authError ? (
