@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { articles } from "@/lib/data";
-import { topicsForSwipe } from "@/lib/topic-adapter";
+import { topicsForSwipe, topicsForSwipeMeta } from "@/lib/topic-adapter";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "../providers";
@@ -95,6 +95,8 @@ export default function HomeClient() {
     [currentTopic, collectionIds]
   );
 
+  const showDebug = process.env.NODE_ENV !== "production";
+
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
       <TopBar />
@@ -110,15 +112,27 @@ export default function HomeClient() {
           <p className="text-xs text-white/50">
             目前卡片 {index + 1}/{topicsForSwipe.length}
           </p>
-          <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
-          <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
-          <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
-          <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-          <p className="text-[10px] text-white/40">
-            SupabaseHost: {supabaseHost ?? "unknown"}
-          </p>
-          {authError && !user ? (
-            <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+          {showDebug ? (
+            <>
+              <p className="text-[10px] text-white/40">
+                TopicsDebug: source={topicsForSwipeMeta.source} count=
+                {topicsForSwipeMeta.topicsCount} notionCount={topicsForSwipeMeta.notionCount}{" "}
+                filteredCount={topicsForSwipeMeta.filteredCount} localCount=
+                {topicsForSwipeMeta.localCount} error={topicsForSwipeMeta.error ?? "none"}
+              </p>
+              <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
+              <p className="text-[10px] text-white/40">
+                AuthReady: {authReady ? "true" : "false"}
+              </p>
+              <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
+              <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
+              <p className="text-[10px] text-white/40">
+                SupabaseHost: {supabaseHost ?? "unknown"}
+              </p>
+              {authError && !user ? (
+                <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+              ) : null}
+            </>
           ) : null}
         </div>
       ) : (

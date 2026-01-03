@@ -1,6 +1,6 @@
 import type { Topic as UiTopic } from "./types";
 import type { Topic as NotionTopic } from "./notion-types";
-import { articles } from "./data";
+import { articles, topics as localTopics } from "./data";
 import { mockTopics } from "./mock-topics";
 
 const summaryFromContext = (context: string) => {
@@ -21,6 +21,17 @@ export function mapNotionTopicToUi(topic: NotionTopic): UiTopic {
 
 const topicIdSet = new Set(articles.map((article) => article.topicId));
 
-export const topicsForSwipe: UiTopic[] = mockTopics
-  .map(mapNotionTopicToUi)
-  .filter((topic) => topicIdSet.has(topic.id));
+const mappedNotionTopics = mockTopics.map(mapNotionTopicToUi);
+const filteredNotionTopics = mappedNotionTopics.filter((topic) => topicIdSet.has(topic.id));
+
+export const topicsForSwipe: UiTopic[] =
+  filteredNotionTopics.length > 0 ? filteredNotionTopics : localTopics;
+
+export const topicsForSwipeMeta = {
+  source: filteredNotionTopics.length > 0 ? "notion" : "local",
+  topicsCount: topicsForSwipe.length,
+  notionCount: mappedNotionTopics.length,
+  filteredCount: filteredNotionTopics.length,
+  localCount: localTopics.length,
+  error: filteredNotionTopics.length > 0 ? null : "notion_topics_without_articles"
+};

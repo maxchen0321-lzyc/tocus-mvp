@@ -12,6 +12,7 @@ type AuthContextValue = {
   isLoading: boolean;
   authReady: boolean;
   authError: string | null;
+  isAnonymous: boolean;
   supabaseHost: string | null;
   signOut: () => Promise<void>;
 };
@@ -86,9 +87,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabaseBrowser.auth.signOut();
   };
 
+  const isAnonymous = Boolean(user && (user.is_anonymous || !user.email));
+
   const value = useMemo(
-    () => ({ user, anonymousId, isLoading, authReady, authError, supabaseHost, signOut }),
-    [user, anonymousId, isLoading, authReady, authError, supabaseHost]
+    () => ({
+      user,
+      anonymousId,
+      isLoading,
+      authReady,
+      authError,
+      isAnonymous,
+      supabaseHost,
+      signOut
+    }),
+    [user, anonymousId, isLoading, authReady, authError, isAnonymous, supabaseHost]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
