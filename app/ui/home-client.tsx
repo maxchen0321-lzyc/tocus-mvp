@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { topics, articles } from "@/lib/data";
+import {
+  getOppositeArticleForTopic,
+  getSwipeTopics,
+  getTopicSourceDiagnostics
+} from "@/lib/topic-source";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "../providers";
@@ -12,20 +16,27 @@ import StanceModal from "@/components/StanceModal";
 
 export default function HomeClient() {
   const router = useRouter();
-  const { user, anonymousId } = useAuth();
+  const { user, anonymousId, authReady, authError, supabaseHost } = useAuth();
   const [index, setIndex] = useState(0);
   const [stanceOpen, setStanceOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const [collectionDebug, setCollectionDebug] = useState<string>("pending");
   const impressions = useRef(new Set<string>());
+  const swipeTopics = getSwipeTopics();
+  const topicDiagnostics = getTopicSourceDiagnostics();
+  const [stanceError, setStanceError] = useState<string | null>(null);
 
-  const currentTopic = topics[index];
+  const currentTopic = swipeTopics[index];
 
   useEffect(() => {
-    if (anonymousId === "pending") return;
-    getCollections(anonymousId, user?.id ?? null).then((data) =>
-      setCollectionIds(data.map((item) => item.topic_id))
-    );
-  }, [anonymousId, user?.id]);
+    if (!authReady) return;
+    getCollections(user?.id ?? null).then((result) => {
+      setCollectionIds(result.data.map((item) => item.topic_id));
+      setCollectionDebug(
+        `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
+      );
+    });
+  }, [authReady, user?.id]);
 
   useEffect(() => {
     if (!currentTopic || anonymousId === "pending") return;
@@ -42,12 +53,15 @@ export default function HomeClient() {
     direction: "left" | "right",
     meta?: { dx: number; threshold: number; inputType: "touch" | "mouse" }
   ) => {
-    if (!currentTopic || anonymousId === "pending") return;
+    if (!currentTopic || !authReady) return;
     if (direction === "right") {
-      await addCollection(currentTopic.id, anonymousId, user?.id ?? null);
-      setCollectionIds((prev) =>
-        prev.includes(currentTopic.id) ? prev : [...prev, currentTopic.id]
-      );
+      const result = await addCollection(currentTopic.id, user?.id ?? null);
+      if (result) {
+        setCollectionIds(result.data.map((item) => item.topic_id));
+        setCollectionDebug(
+          `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
+        );
+      }
     }
     await trackEvent(direction === "right" ? "topic_swipe_right" : "topic_swipe_left", {
       userId: user?.id ?? null,
@@ -55,15 +69,23 @@ export default function HomeClient() {
       topicId: currentTopic.id,
       metadata: meta
     });
-    setIndex((prev) => (prev + 1) % topics.length);
+    setIndex((prev) => (prev + 1) % swipeTopics.length);
   };
 
   const handleOpenTopic = () => {
+    setStanceError(null);
     setStanceOpen(true);
   };
 
   const handleConfirmStance = async (value: number) => {
-    if (!currentTopic || anonymousId === "pending") return;
+    if (!currentTopic) {
+      setStanceError("找不到議題，請重新整理後再試。");
+      return;
+    }
+    if (anonymousId === "pending") {
+      setStanceError("正在建立訪客身份，請稍候再試。");
+      return;
+    }
     setStanceOpen(false);
     await saveStance(currentTopic.id, value, "initial", anonymousId, user?.id ?? null);
     await trackEvent("stance_set_initial", {
@@ -73,13 +95,8 @@ export default function HomeClient() {
       metadata: { value }
     });
     const stance = value >= 0 ? "supporting" : "opposing";
-    const opposite = stance === "supporting" ? "opposing" : "supporting";
-    const target = articles.find(
-      (article) => article.topicId === currentTopic.id && article.stance === opposite
-    );
-    if (target) {
-      router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
-    }
+    getOppositeArticleForTopic(currentTopic.id, stance);
+    router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
   };
 
   const isCollected = useMemo(
@@ -87,9 +104,22 @@ export default function HomeClient() {
     [currentTopic, collectionIds]
   );
 
+  const showDebug =
+    process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
+
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
       <TopBar />
+      {showDebug ? (
+        <p className="text-[10px] text-white/50">
+          DataSource: {topicDiagnostics.source} · TopicsCount: {topicDiagnostics.topicsCount} ·
+          AdapterCountBeforeFilter: {topicDiagnostics.adapterCountBeforeFilter} ·
+          AdapterCountAfterFilter: {topicDiagnostics.adapterCountAfterFilter} · Limit:{" "}
+          {topicDiagnostics.limit ?? "none"} · Truncated:{" "}
+          {topicDiagnostics.truncated ? "true" : "false"} · Reason:{" "}
+          {topicDiagnostics.truncatedReason ?? "none"}
+        </p>
+      ) : null}
       {currentTopic ? (
         <div className="space-y-4">
           <SwipeCard
@@ -100,8 +130,24 @@ export default function HomeClient() {
             isCollected={isCollected}
           />
           <p className="text-xs text-white/50">
-            目前卡片 {index + 1}/{topics.length}
+            目前卡片 {index + 1}/{swipeTopics.length}
           </p>
+          {showDebug ? (
+            <>
+              <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
+              <p className="text-[10px] text-white/40">
+                AuthReady: {authReady ? "true" : "false"}
+              </p>
+              <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
+              <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
+              <p className="text-[10px] text-white/40">
+                SupabaseHost: {supabaseHost ?? "unknown"}
+              </p>
+              {authError && !user ? (
+                <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+              ) : null}
+            </>
+          ) : null}
         </div>
       ) : (
         <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
@@ -113,6 +159,8 @@ export default function HomeClient() {
         title="請設定你的立場"
         onConfirm={handleConfirmStance}
         onClose={() => setStanceOpen(false)}
+        confirmDisabled={anonymousId === "pending"}
+        confirmHint={stanceError ?? (anonymousId === "pending" ? "正在建立訪客身份，請稍候。" : undefined)}
       />
     </div>
   );

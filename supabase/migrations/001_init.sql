@@ -26,8 +26,7 @@ create table if not exists articles (
 
 create table if not exists collections (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid null,
-  anonymous_id text not null,
+  user_id uuid not null,
   topic_id text not null references topics(id) on delete cascade,
   created_at timestamptz not null default now()
 );
@@ -79,9 +78,17 @@ alter table events enable row level security;
 create policy "public read topics" on topics for select using (true);
 create policy "public read articles" on articles for select using (true);
 
-create policy "public insert collections" on collections for insert with check (true);
-create policy "public read collections" on collections for select using (true);
-create policy "public delete collections" on collections for delete using (true);
+create policy "owner insert collections" on collections
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "owner read collections" on collections
+  for select
+  using (auth.uid() = user_id);
+
+create policy "owner delete collections" on collections
+  for delete
+  using (auth.uid() = user_id);
 
 create policy "public insert stances" on stances for insert with check (true);
 create policy "public read stances" on stances for select using (true);

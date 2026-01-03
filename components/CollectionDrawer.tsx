@@ -18,8 +18,11 @@ export default function CollectionDrawer({ open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     if (anonymousId !== "pending") {
-      getCollections(anonymousId, user?.id ?? null).then((data) => {
-        setItems(data.map((item) => item.topic_id));
+      getCollections(user?.id ?? null).then((result) => {
+        setItems(result.data.map((item) => item.topic_id));
+        if (result.error) {
+          console.error("collection drawer getCollections error", result.error);
+        }
       });
     }
     if (anonymousId !== "pending") {
@@ -34,8 +37,13 @@ export default function CollectionDrawer({ open, onClose }: Props) {
 
   const handleRemove = async (topicId: string) => {
     if (anonymousId === "pending") return;
-    await removeCollection(topicId, anonymousId, user?.id ?? null);
-    setItems((prev) => prev.filter((id) => id !== topicId));
+    const result = await removeCollection(topicId, user?.id ?? null);
+    if (result) {
+      setItems(result.data.map((item) => item.topic_id));
+      if (result.error) {
+        console.error("collection drawer remove error", result.error);
+      }
+    }
     if (anonymousId !== "pending") {
       await trackEvent("collection_remove", {
         userId: user?.id ?? null,

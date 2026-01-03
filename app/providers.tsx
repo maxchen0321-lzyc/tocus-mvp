@@ -5,12 +5,15 @@ import type { User } from "@supabase/supabase-js";
 import { supabaseBrowser } from "@/lib/supabase";
 import { hasSupabaseConfig } from "@/lib/env";
 import { getAnonymousId } from "@/lib/identity";
-import { mergeCollections } from "@/lib/db";
 
 type AuthContextValue = {
   user: User | null;
   anonymousId: string;
   isLoading: boolean;
+  authReady: boolean;
+  authError: string | null;
+  isAnonymous: boolean;
+  supabaseHost: string | null;
   signOut: () => Promise<void>;
 };
 
@@ -20,10 +23,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [anonymousId, setAnonymousId] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
-  const [mergedForUser, setMergedForUser] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [supabaseHost, setSupabaseHost] = useState<string | null>(null);
 
   useEffect(() => {
     setAnonymousId(getAnonymousId());
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (url) {
+      try {
+        setSupabaseHost(new URL(url).host);
+      } catch {
+        setSupabaseHost(null);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -31,19 +44,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!hasSupabaseConfig) {
       setUser(null);
       setIsLoading(false);
+      setAuthReady(true);
+      setAuthError("missing_supabase_keys");
       return () => {
         active = false;
       };
     }
-    supabaseBrowser.auth.getSession().then(({ data }) => {
+    supabaseBrowser.auth.getUser().then(async ({ data, error }) => {
       if (!active) return;
-      setUser(data.session?.user ?? null);
+      if (error) {
+        setAuthError(error.message);
+      }
+      if (!data.user) {
+        const { data: anonData, error: anonError } =
+          await supabaseBrowser.auth.signInAnonymously();
+        if (anonError) {
+          setAuthError(anonError.message);
+        }
+        setUser(anonData?.user ?? null);
+        setAuthReady(true);
+        setIsLoading(false);
+        return;
+      }
+      setUser(data.user ?? null);
       setIsLoading(false);
+      setAuthReady(true);
     });
     const { data: listener } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       setUser(session?.user ?? null);
       setIsLoading(false);
+      setAuthReady(true);
     });
     return () => {
       active = false;
@@ -51,22 +82,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (!user?.id || anonymousId === "pending") return;
-    if (mergedForUser === user.id) return;
-    mergeCollections(anonymousId, user.id).then(() => {
-      setMergedForUser(user.id);
-    });
-  }, [user?.id, anonymousId, mergedForUser]);
-
   const signOut = async () => {
     if (!hasSupabaseConfig) return;
     await supabaseBrowser.auth.signOut();
   };
 
+  const isAnonymous = Boolean(user && (user.is_anonymous || !user.email));
+
   const value = useMemo(
-    () => ({ user, anonymousId, isLoading, signOut }),
-    [user, anonymousId, isLoading]
+    () => ({
+      user,
+      anonymousId,
+      isLoading,
+      authReady,
+      authError,
+      isAnonymous,
+      supabaseHost,
+      signOut
+    }),
+    [user, anonymousId, isLoading, authReady, authError, isAnonymous, supabaseHost]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
