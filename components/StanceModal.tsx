@@ -8,9 +8,19 @@ type Props = {
   onConfirm: (value: number) => void;
   onClose: () => void;
   label?: string;
+  confirmDisabled?: boolean;
+  confirmHint?: string;
 };
 
-export default function StanceModal({ open, title, onConfirm, onClose, label }: Props) {
+export default function StanceModal({
+  open,
+  title,
+  onConfirm,
+  onClose,
+  label,
+  confirmDisabled,
+  confirmHint
+}: Props) {
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -45,11 +55,13 @@ export default function StanceModal({ open, title, onConfirm, onClose, label }: 
             <span>{value}</span>
             <span>支持</span>
           </div>
+          {confirmHint ? <p className="text-xs text-amber-200">{confirmHint}</p> : null}
           <button
-            className="w-full rounded-xl bg-white/10 px-4 py-2 text-sm"
+            className="w-full rounded-xl bg-white/10 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => onConfirm(value)}
+            disabled={confirmDisabled}
           >
-            確定
+            {confirmDisabled ? "處理中" : "確定"}
           </button>
         </div>
       </div>

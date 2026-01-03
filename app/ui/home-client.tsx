@@ -24,6 +24,7 @@ export default function HomeClient() {
   const impressions = useRef(new Set<string>());
   const swipeTopics = getSwipeTopics();
   const topicDiagnostics = getTopicSourceDiagnostics();
+  const [stanceError, setStanceError] = useState<string | null>(null);
 
   const currentTopic = swipeTopics[index];
 
@@ -72,11 +73,19 @@ export default function HomeClient() {
   };
 
   const handleOpenTopic = () => {
+    setStanceError(null);
     setStanceOpen(true);
   };
 
   const handleConfirmStance = async (value: number) => {
-    if (!currentTopic || anonymousId === "pending") return;
+    if (!currentTopic) {
+      setStanceError("找不到議題，請重新整理後再試。");
+      return;
+    }
+    if (anonymousId === "pending") {
+      setStanceError("正在建立訪客身份，請稍候再試。");
+      return;
+    }
     setStanceOpen(false);
     await saveStance(currentTopic.id, value, "initial", anonymousId, user?.id ?? null);
     await trackEvent("stance_set_initial", {
@@ -86,10 +95,8 @@ export default function HomeClient() {
       metadata: { value }
     });
     const stance = value >= 0 ? "supporting" : "opposing";
-    const target = getOppositeArticleForTopic(currentTopic.id, stance);
-    if (target) {
-      router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
-    }
+    getOppositeArticleForTopic(currentTopic.id, stance);
+    router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
   };
 
   const isCollected = useMemo(
@@ -152,6 +159,8 @@ export default function HomeClient() {
         title="請設定你的立場"
         onConfirm={handleConfirmStance}
         onClose={() => setStanceOpen(false)}
+        confirmDisabled={anonymousId === "pending"}
+        confirmHint={stanceError ?? (anonymousId === "pending" ? "正在建立訪客身份，請稍候。" : undefined)}
       />
     </div>
   );
