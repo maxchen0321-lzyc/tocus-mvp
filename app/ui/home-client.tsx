@@ -103,7 +103,7 @@ export default function HomeClient() {
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex min-h-[100dvh] max-w-xl flex-col gap-4 px-4 py-6">
       <TopBar />
       {showDebug ? (
         <p className="text-[10px] text-white/50">
@@ -115,40 +115,44 @@ export default function HomeClient() {
           {topicDiagnostics.truncatedReason ?? "none"}
         </p>
       ) : null}
-      {currentTopic ? (
-        <div className="space-y-4">
-          <SwipeCard
-            topic={currentTopic}
-            onOpen={handleOpenTopic}
-            onSwipeLeft={(meta) => handleSwipe("left", meta)}
-            onSwipeRight={(meta) => handleSwipe("right", meta)}
-            isCollected={isCollected}
-          />
-          <p className="text-xs text-white/50">
-            目前卡片 {index + 1}/{swipeTopics.length}
-          </p>
-          {showDebug ? (
-            <>
-              <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
-              <p className="text-[10px] text-white/40">
-                AuthReady: {authReady ? "true" : "false"}
-              </p>
-              <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
-              <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-              <p className="text-[10px] text-white/40">
-                SupabaseHost: {supabaseHost ?? "unknown"}
-              </p>
-              {authError && !user ? (
-                <p className="text-[10px] text-red-300">AuthError: {authError}</p>
-              ) : null}
-            </>
-          ) : null}
-        </div>
-      ) : (
-        <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
-          暫無議題
-        </div>
-      )}
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        {currentTopic ? (
+          <>
+            <div className="min-h-0 flex-1">
+              <SwipeCard
+                topic={currentTopic}
+                onOpen={handleOpenTopic}
+                onSwipeLeft={(meta) => handleSwipe("left", meta)}
+                onSwipeRight={(meta) => handleSwipe("right", meta)}
+                isCollected={isCollected}
+              />
+            </div>
+            <p className="text-xs text-white/50">
+              目前卡片 {index + 1}/{swipeTopics.length}
+            </p>
+            {showDebug ? (
+              <>
+                <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
+                <p className="text-[10px] text-white/40">
+                  AuthReady: {authReady ? "true" : "false"}
+                </p>
+                <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
+                <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
+                <p className="text-[10px] text-white/40">
+                  SupabaseHost: {supabaseHost ?? "unknown"}
+                </p>
+                {authError && !user ? (
+                  <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+                ) : null}
+              </>
+            ) : null}
+          </>
+        ) : (
+          <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
+            暫無議題
+          </div>
+        )}
+      </div>
       <StanceModal
         open={stanceOpen}
         title="請設定你的立場"

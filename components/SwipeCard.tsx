@@ -103,10 +103,10 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
   const opacity = 1 - Math.min(Math.abs(dx) / (threshold * 1.5), 0.35);
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full flex-col gap-4">
       <div
         ref={cardRef}
-        className="touch-pan-y"
+        className="flex-1 min-h-0 touch-pan-y"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -117,9 +117,9 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
           transition: dragging ? "none" : "transform 200ms ease, opacity 200ms ease"
         }}
       >
-        <TopicCard topic={topic} onClick={handleCardClick} />
+        <TopicCard topic={topic} onClick={handleCardClick} className="h-full" />
       </div>
-      <div className="flex gap-3 text-sm">
+      <div className="flex shrink-0 gap-3 text-sm">
         <button
           className="flex-1 rounded-xl border border-white/20 py-3"
           onClick={() => onSwipeLeft({ dx: -threshold, threshold, inputType: "touch" })}
