@@ -17,6 +17,8 @@ export default function ReadClient() {
   const { user, anonymousId } = useAuth();
   const [finalStanceOpen, setFinalStanceOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const showDebug =
+    process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   const topicId = searchParams.get("topicId") ?? "";
   const stanceParam = searchParams.get("stance") ?? "supporting";
@@ -54,11 +56,11 @@ export default function ReadClient() {
     trackEvent("article_open", {
       userId: user?.id ?? null,
       anonymousId,
-      topicId: topic.id,
+      topicId,
       articleId: article.id,
       metadata: entry ? { entry } : undefined
     });
-  }, [article?.id, anonymousId, user?.id, entry, topic?.id]);
+  }, [article?.id, anonymousId, user?.id, entry, topicId]);
 
   const handleNextSame = async () => {
     setActionError(null);
@@ -139,13 +141,18 @@ export default function ReadClient() {
 
   if (!article || !topic) {
     const availableArticles = topic?.articles.length ?? 0;
+    const totalArticles = mockTopics.reduce((count, item) => count + item.articles.length, 0);
+    const availableIds = mockTopics.slice(0, 5).map((item) => item.id).join(", ");
     return (
       <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-white/60">
         <div className="space-y-2 text-center">
           <p>找不到文章</p>
-          <p className="text-xs text-white/40">
-            topicId={topicId || "none"} · availableArticles={availableArticles}
-          </p>
+          {showDebug ? (
+            <p className="text-xs text-white/40">
+              topicId={topicId || "none"} · topicsCount={mockTopics.length} · articlesCount=
+              {totalArticles} · availableArticles={availableArticles} · ids={availableIds || "none"}
+            </p>
+          ) : null}
         </div>
       </div>
     );
