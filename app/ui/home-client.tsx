@@ -78,6 +78,10 @@ export default function HomeClient() {
       setStanceError("找不到議題，請重新整理後再試。");
       return;
     }
+    if (!authReady) {
+      setStanceError("登入狀態尚未完成，請稍候再試。");
+      return;
+    }
     if (anonymousId === "pending") {
       setStanceError("正在建立訪客身份，請稍候再試。");
       return;
@@ -90,8 +94,11 @@ export default function HomeClient() {
       topicId: currentTopic.id,
       metadata: { value }
     });
-    const stance = value >= 0 ? "supporting" : "opposing";
-    router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
+    const userStance = value >= 0 ? "supporting" : "opposing";
+    const view = userStance === "supporting" ? "opposing" : "supporting";
+    router.push(
+      `/read?topicId=${currentTopic.id}&userStance=${userStance}&view=${view}&entry=stance_initial`
+    );
   };
 
   const isCollected = useMemo(
@@ -158,8 +165,15 @@ export default function HomeClient() {
         title="請設定你的立場"
         onConfirm={handleConfirmStance}
         onClose={() => setStanceOpen(false)}
-        confirmDisabled={anonymousId === "pending"}
-        confirmHint={stanceError ?? (anonymousId === "pending" ? "正在建立訪客身份，請稍候。" : undefined)}
+        confirmDisabled={!authReady || !currentTopic || anonymousId === "pending"}
+        confirmHint={
+          stanceError ??
+          (!authReady
+            ? "登入狀態尚未完成，請稍候。"
+            : anonymousId === "pending"
+            ? "正在建立訪客身份，請稍候。"
+            : undefined)
+        }
       />
     </div>
   );

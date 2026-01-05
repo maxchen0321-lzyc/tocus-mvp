@@ -21,35 +21,60 @@ export default function ReadClient() {
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   const topicId = searchParams.get("topicId") ?? "";
-  const stanceParam = searchParams.get("stance") ?? "supporting";
+  const paramUserStance = searchParams.get("userStance") ?? "";
+  const paramView = searchParams.get("view") ?? "";
+  const articleIdParam = searchParams.get("articleId") ?? "";
   const entry = searchParams.get("entry") ?? null;
-  const oppositeStance = stanceParam === "supporting" ? "opposing" : "supporting";
+  const userStance = paramUserStance === "opposing" ? "opposing" : "supporting";
+  const view =
+    paramView === "supporting"
+      ? "supporting"
+      : paramView === "opposing"
+      ? "opposing"
+      : userStance === "supporting"
+      ? "opposing"
+      : "supporting";
 
   const topic = useMemo(() => mockTopics.find((item) => item.id === topicId), [topicId]);
 
+  const displayedArticles = useMemo(() => {
+    if (!topic) return [];
+    return topic.articles.filter(
+      (item) => (item.stance === "pro" ? "supporting" : "opposing") === view
+    );
+  }, [topic, view]);
+
   const article = useMemo(() => {
+    if (!displayedArticles.length) return undefined;
+    if (articleIdParam) {
+      return displayedArticles.find((item) => item.id === articleIdParam);
+    }
+    return displayedArticles[0];
+  }, [displayedArticles, articleIdParam]);
+
+  const sameStanceArticle = useMemo(() => {
+    if (!article || displayedArticles.length <= 1) return undefined;
+    const currentIndex = displayedArticles.findIndex((item) => item.id === article.id);
+    if (currentIndex === -1) return undefined;
+    const nextIndex = (currentIndex + 1) % displayedArticles.length;
+    return displayedArticles[nextIndex];
+  }, [displayedArticles, article]);
+
+  const oppositeArticle = useMemo(() => {
     if (!topic) return undefined;
-    const targetStance = oppositeStance === "supporting" ? "con" : "pro";
-    return topic.articles.find((item) => item.stance === targetStance);
-  }, [topic, oppositeStance]);
+    const oppositeView = view === "supporting" ? "opposing" : "supporting";
+    return topic.articles.find(
+      (item) => (item.stance === "pro" ? "supporting" : "opposing") === oppositeView
+    );
+  }, [topic, view]);
 
-  const sameStanceArticle = useMemo(
-    () => {
-      if (!topic || !article) return undefined;
-      const sameStanceList = topic.articles.filter((item) => item.stance === article.stance);
-      return sameStanceList.find((item) => item.id !== article.id);
-    },
-    [topic, article]
-  );
-
-  const oppositeArticle = useMemo(
-    () => {
-      if (!topic || !article) return undefined;
-      const oppositeStanceValue = article.stance === "pro" ? "con" : "pro";
-      return topic.articles.find((item) => item.stance === oppositeStanceValue);
-    },
-    [topic, article]
-  );
+  const availableStancesForTopic = useMemo(() => {
+    if (!topic) return null;
+    return {
+      supporting: topic.articles.filter((item) => item.stance === "pro").length,
+      opposing: topic.articles.filter((item) => item.stance === "con").length
+    };
+  }, [topic]);
 
   useEffect(() => {
     if (!article || anonymousId === "pending") return;
@@ -58,14 +83,14 @@ export default function ReadClient() {
       anonymousId,
       topicId,
       articleId: article.id,
-      metadata: entry ? { entry } : undefined
+      metadata: { entry, userStance, view }
     });
-  }, [article?.id, anonymousId, user?.id, entry, topicId]);
+  }, [article?.id, anonymousId, user?.id, entry, topicId, userStance, view]);
 
   const handleNextSame = async () => {
     setActionError(null);
     if (!sameStanceArticle) {
-      setActionError("找不到對應文章，請返回首頁再試。");
+      setActionError("目前只有一篇同立場文章。");
       return;
     }
     if (anonymousId === "pending") {
@@ -78,7 +103,9 @@ export default function ReadClient() {
       topicId,
       articleId: sameStanceArticle.id
     });
-    router.push(`/read?topicId=${topicId}&stance=${stanceParam}`);
+    const nextUrl = `/read?topicId=${topicId}&userStance=${userStance}&view=${view}&articleId=${sameStanceArticle.id}&entry=same`;
+    console.log("Navigate to:", nextUrl);
+    router.push(nextUrl);
   };
 
   const handleNextOpposite = async () => {
@@ -97,8 +124,10 @@ export default function ReadClient() {
       topicId,
       articleId: oppositeArticle.id
     });
-    const nextStanceParam = article?.stance === "pro" ? "supporting" : "opposing";
-    router.push(`/read?topicId=${topicId}&stance=${nextStanceParam}`);
+    const nextView = view === "supporting" ? "opposing" : "supporting";
+    const nextUrl = `/read?topicId=${topicId}&userStance=${userStance}&view=${nextView}&entry=switch`;
+    console.log("Navigate to:", nextUrl);
+    router.push(nextUrl);
   };
 
   const handleReadComplete = async () => {
@@ -134,7 +163,7 @@ export default function ReadClient() {
       userId: user?.id ?? null,
       anonymousId,
       topicId,
-      metadata: { value }
+      metadata: { value, userStance, view }
     });
     router.push("/");
   };
@@ -143,14 +172,21 @@ export default function ReadClient() {
     const availableArticles = topic?.articles.length ?? 0;
     const totalArticles = mockTopics.reduce((count, item) => count + item.articles.length, 0);
     const availableIds = mockTopics.slice(0, 5).map((item) => item.id).join(", ");
+    const availableStances = availableStancesForTopic;
     return (
       <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-white/60">
         <div className="space-y-2 text-center">
-          <p>找不到文章</p>
+          <p>找不到 view={view} 的文章</p>
           {showDebug ? (
             <p className="text-xs text-white/40">
-              topicId={topicId || "none"} · topicsCount={mockTopics.length} · articlesCount=
-              {totalArticles} · availableArticles={availableArticles} · ids={availableIds || "none"}
+              topicId={topicId || "none"} · userStance={userStance} · view={view} ·
+              foundArticleId={article?.id ?? "none"} · foundArticleStance=
+              {article?.stance ?? "none"} · availableStances=
+              {availableStances
+                ? `supporting=${availableStances.supporting}, opposing=${availableStances.opposing}`
+                : "none"}{" "}
+              · topicsCount={mockTopics.length} · articlesCount={totalArticles} ·
+              availableArticles={availableArticles} · ids={availableIds || "none"}
             </p>
           ) : null}
         </div>
@@ -167,6 +203,16 @@ export default function ReadClient() {
           {article.author} · {article.stance === "pro" ? "支持方" : "反方"}
         </p>
         <p className="text-xs text-white/50">撰寫時間：{formatDateTime(article.publishedAt)}</p>
+        {showDebug ? (
+          <p className="text-[10px] text-white/40">
+            topicId={topicId} · userStance={userStance} · view={view} ·
+            foundArticleId={article.id} · foundArticleStance={article.stance} ·
+            availableStances=
+            {availableStancesForTopic
+              ? `supporting=${availableStancesForTopic.supporting}, opposing=${availableStancesForTopic.opposing}`
+              : "none"}
+          </p>
+        ) : null}
       </div>
 
       <article className="glass rounded-2xl p-5">
@@ -196,6 +242,10 @@ export default function ReadClient() {
           結束閱讀
         </button>
       </div>
+
+      {!sameStanceArticle ? (
+        <p className="text-xs text-white/50">目前只有一篇同立場文章。</p>
+      ) : null}
 
       {actionError ? <p className="text-xs text-amber-200">{actionError}</p> : null}
 
