@@ -1,7 +1,6 @@
-import type { Topic as UiTopic, Article } from "./types";
-import type { Topic as NotionTopic, Article as NotionArticle } from "./notion-types";
-import { articles as fallbackArticles, topics as fallbackTopics } from "./data";
-import { mockTopics } from "./mock-topics";
+import type { Topic as UiTopic } from "./types";
+import { topics as fallbackTopics } from "./data";
+import { mockTopics } from "@/data/mockTopics";
 import { adaptNotionTopics } from "./topic-adapter";
 
 export type TopicDataSource = "notion" | "supabase" | "fallback_old_seed";
@@ -23,30 +22,11 @@ const parseTopicLimit = (value: string | undefined) => {
   return parsed;
 };
 
-const mapNotionBlocksToContent = (blocks: NotionArticle["content"]) =>
-  blocks
-    .map((block) => (block.type === "heading" ? `## ${block.text}` : block.text))
-    .join("\n\n");
-
-const mapNotionArticlesToUi = (topics: NotionTopic[]): Article[] =>
-  topics.flatMap((topic) =>
-    topic.articles.map((article) => ({
-      id: article.id,
-      topicId: topic.id,
-      stance: article.stance === "pro" ? "supporting" : "opposing",
-      title: article.title,
-      content: mapNotionBlocksToContent(article.content),
-      author: article.author,
-      createdAt: article.publishedAt
-    }))
-  );
-
 const buildTopicState = () => {
   const adapted = adaptNotionTopics(mockTopics);
   const hasNotionTopics = adapted.topics.length > 0;
   const source: TopicDataSource = hasNotionTopics ? "notion" : "fallback_old_seed";
   const baseTopics = hasNotionTopics ? adapted.topics : fallbackTopics;
-  const baseArticles = hasNotionTopics ? mapNotionArticlesToUi(mockTopics) : fallbackArticles;
   const limit = parseTopicLimit(process.env.NEXT_PUBLIC_TOPIC_LIMIT);
   const truncated = limit !== null && baseTopics.length > limit;
   const swipeTopics = limit ? baseTopics.slice(0, limit) : baseTopics;
@@ -64,7 +44,6 @@ const buildTopicState = () => {
   return {
     swipeTopics,
     allTopics: baseTopics,
-    allArticles: baseArticles,
     diagnostics
   };
 };
@@ -78,22 +57,3 @@ export const getTopicById = (id: string): UiTopic | undefined =>
 
 export const getTopicSourceDiagnostics = (): TopicSourceDiagnostics =>
   topicState.diagnostics;
-
-export const getArticleByTopicAndStance = (
-  topicId: string,
-  stance: Article["stance"]
-): Article | undefined =>
-  topicState.allArticles.find(
-    (article) => article.topicId === topicId && article.stance === stance
-  );
-
-export const getArticlesForTopic = (topicId: string): Article[] =>
-  topicState.allArticles.filter((article) => article.topicId === topicId);
-
-export const getOppositeArticleForTopic = (
-  topicId: string,
-  stance: Article["stance"]
-): Article | undefined => {
-  const opposite = stance === "supporting" ? "opposing" : "supporting";
-  return getArticleByTopicAndStance(topicId, opposite);
-};

@@ -1,5 +1,5 @@
 import type { Topic as UiTopic } from "./types";
-import type { Topic as NotionTopic } from "./notion-types";
+import type { Topic as NotionTopic } from "@/data/mockTopics";
 
 const summaryFromContext = (context: string) => {
   if (context.length <= 48) return context;

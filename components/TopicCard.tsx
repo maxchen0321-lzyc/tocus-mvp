@@ -2,7 +2,7 @@
 
 import { formatDate } from "@/lib/utils";
 import type { Topic as LegacyTopic } from "@/lib/types";
-import type { Topic as MockTopic } from "@/lib/notion-types";
+import type { Topic as MockTopic } from "@/data/mockTopics";
 
 type Props = {
   topic: LegacyTopic | MockTopic;

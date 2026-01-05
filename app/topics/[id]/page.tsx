@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import TopicDetail from "@/components/TopicDetail";
-import { mockTopics } from "@/lib/mock-topics";
+import { mockTopics } from "@/data/mockTopics";
 
 export default function TopicDetailPage() {
   const params = useParams<{ id: string }>();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { mockTopics } from "@/lib/mock-topics";
+import { mockTopics } from "@/data/mockTopics";
 import TopicCard from "@/components/TopicCard";
 import TopBar from "@/components/TopBar";
 

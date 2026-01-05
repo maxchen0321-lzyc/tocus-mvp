@@ -1,6 +1,6 @@
 "use client";
 
-import type { ArticleBlock } from "@/lib/notion-types";
+import type { ArticleBlock } from "@/data/mockTopics";
 
 type Props = {
   blocks: ArticleBlock[];
@@ -8,11 +8,11 @@ type Props = {
 
 export default function ArticleRenderer({ blocks }: Props) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {blocks.map((block, index) => {
         if (block.type === "heading") {
           return (
-            <h3 key={`${block.text}-${index}`} className="text-base font-semibold text-white">
+            <h3 key={`${block.text}-${index}`} className="text-lg font-semibold text-white">
               {block.text}
             </h3>
           );

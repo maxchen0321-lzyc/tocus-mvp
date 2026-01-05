@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { Topic } from "@/lib/notion-types";
+import { useEffect, useMemo, useState } from "react";
+import type { Topic } from "@/data/mockTopics";
 import { formatDate } from "@/lib/utils";
 import ArticleRenderer from "./ArticleRenderer";
 
@@ -11,11 +11,28 @@ type Props = {
 
 export default function TopicDetail({ topic }: Props) {
   const [stance, setStance] = useState<"pro" | "con">("pro");
+  const [articleId, setArticleId] = useState<string | null>(null);
 
-  const article = useMemo(
-    () => topic.articles.find((item) => item.stance === stance) ?? topic.articles[0],
+  const stanceArticles = useMemo(
+    () => topic.articles.filter((item) => item.stance === stance),
     [topic.articles, stance]
   );
+
+  useEffect(() => {
+    if (!stanceArticles.length) {
+      setArticleId(null);
+      return;
+    }
+    setArticleId(stanceArticles[0].id);
+  }, [stanceArticles]);
+
+  const article = useMemo(() => {
+    if (!stanceArticles.length) {
+      return topic.articles[0];
+    }
+    if (!articleId) return stanceArticles[0];
+    return stanceArticles.find((item) => item.id === articleId) ?? stanceArticles[0];
+  }, [stanceArticles, articleId, topic.articles]);
 
   return (
     <div className="space-y-6">
@@ -48,11 +65,29 @@ export default function TopicDetail({ topic }: Props) {
       </div>
 
       <div className="glass rounded-2xl p-5">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold">{article.title}</h2>
-          <p className="text-xs text-white/60">
-            {article.author} · {formatDate(article.publishedAt)}
-          </p>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold">{article.title}</h2>
+            <p className="text-xs text-white/60">
+              {article.author} · {formatDate(article.publishedAt)}
+            </p>
+          </div>
+          {stanceArticles.length > 1 ? (
+            <label className="block space-y-1 text-xs text-white/60">
+              <span>切換同立場文章</span>
+              <select
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-sm text-white"
+                value={articleId ?? ""}
+                onChange={(event) => setArticleId(event.target.value)}
+              >
+                {stanceArticles.map((item) => (
+                  <option key={item.id} value={item.id} className="text-black">
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
         <div className="mt-4">
           <ArticleRenderer blocks={article.content} />

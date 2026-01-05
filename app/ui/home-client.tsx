@@ -2,11 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  getOppositeArticleForTopic,
-  getSwipeTopics,
-  getTopicSourceDiagnostics
-} from "@/lib/topic-source";
+import { getSwipeTopics, getTopicSourceDiagnostics } from "@/lib/topic-source";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "../providers";
@@ -95,7 +91,6 @@ export default function HomeClient() {
       metadata: { value }
     });
     const stance = value >= 0 ? "supporting" : "opposing";
-    getOppositeArticleForTopic(currentTopic.id, stance);
     router.push(`/read?topicId=${currentTopic.id}&stance=${stance}&entry=card_click`);
   };
 
