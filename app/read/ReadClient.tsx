@@ -64,7 +64,7 @@ export default function ReadClient() {
 
   const handleNextSame = async () => {
     setActionError(null);
-    if (!topic || !sameStanceArticle) {
+    if (!sameStanceArticle) {
       setActionError("找不到對應文章，請返回首頁再試。");
       return;
     }
@@ -75,15 +75,15 @@ export default function ReadClient() {
     await trackEvent("article_next_same", {
       userId: user?.id ?? null,
       anonymousId,
-      topicId: topic.id,
+      topicId,
       articleId: sameStanceArticle.id
     });
-    router.push(`/read?topicId=${topic.id}&stance=${stanceParam}`);
+    router.push(`/read?topicId=${topicId}&stance=${stanceParam}`);
   };
 
   const handleNextOpposite = async () => {
     setActionError(null);
-    if (!topic || !oppositeArticle) {
+    if (!oppositeArticle) {
       setActionError("找不到對應文章，請返回首頁再試。");
       return;
     }
@@ -94,11 +94,11 @@ export default function ReadClient() {
     await trackEvent("article_next_opposite", {
       userId: user?.id ?? null,
       anonymousId,
-      topicId: topic.id,
+      topicId,
       articleId: oppositeArticle.id
     });
     const nextStanceParam = article?.stance === "pro" ? "supporting" : "opposing";
-    router.push(`/read?topicId=${topic.id}&stance=${nextStanceParam}`);
+    router.push(`/read?topicId=${topicId}&stance=${nextStanceParam}`);
   };
 
   const handleReadComplete = async () => {
@@ -114,7 +114,7 @@ export default function ReadClient() {
     await trackEvent("article_read_complete", {
       userId: user?.id ?? null,
       anonymousId,
-      topicId: topic.id,
+      topicId,
       articleId: article.id
     });
     setFinalStanceOpen(true);
@@ -129,11 +129,11 @@ export default function ReadClient() {
       setActionError("正在建立訪客身份，請稍候再試。");
       return;
     }
-    await saveStance(topic.id, value, "final", anonymousId, user?.id ?? null);
+    await saveStance(topicId, value, "final", anonymousId, user?.id ?? null);
     await trackEvent("stance_set_final", {
       userId: user?.id ?? null,
       anonymousId,
-      topicId: topic.id,
+      topicId,
       metadata: { value }
     });
     router.push("/");
@@ -199,7 +199,7 @@ export default function ReadClient() {
 
       {actionError ? <p className="text-xs text-amber-200">{actionError}</p> : null}
 
-      <CommentSection parentType="article" parentId={article.id} topicId={topic.id} articleId={article.id} />
+      <CommentSection parentType="article" parentId={article.id} topicId={topicId} articleId={article.id} />
 
       <StanceModal
         open={finalStanceOpen}
