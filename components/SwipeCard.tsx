@@ -21,6 +21,7 @@ type Props = {
 export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, isCollected }: Props) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const startX = useRef<number | null>(null);
+  const startY = useRef<number | null>(null);
   const startTime = useRef<number | null>(null);
   const pointerId = useRef<number | null>(null);
   const inputType = useRef<SwipeMeta["inputType"]>("touch");
@@ -35,6 +36,7 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
     pointerId.current = event.pointerId;
     inputType.current = event.pointerType === "mouse" ? "mouse" : "touch";
     startX.current = event.clientX;
+    startY.current = event.clientY;
     startTime.current = Date.now();
     dragged.current = false;
     setDragging(false);
@@ -44,6 +46,10 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (pointerId.current !== event.pointerId || startX.current == null) return;
     const delta = event.clientX - startX.current;
+    const deltaY = startY.current == null ? 0 : event.clientY - startY.current;
+    if (Math.abs(delta) > Math.abs(deltaY) && Math.abs(delta) > 8) {
+      event.preventDefault();
+    }
     if (Math.abs(delta) > 10) {
       dragged.current = true;
       setDragging(true);
@@ -67,6 +73,7 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
       inputType: inputType.current
     };
     startX.current = null;
+    startY.current = null;
     startTime.current = null;
     pointerId.current = null;
     cardRef.current?.releasePointerCapture(event.pointerId);
@@ -103,7 +110,7 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
   const opacity = 1 - Math.min(Math.abs(dx) / (threshold * 1.5), 0.35);
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full flex-col gap-4 overflow-x-hidden">
       <div
         ref={cardRef}
         className="flex-1 min-h-0 touch-pan-y"
