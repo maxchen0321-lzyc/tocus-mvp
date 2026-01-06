@@ -110,7 +110,7 @@ export default function HomeClient() {
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-xl flex-col gap-4 px-4 py-6">
+    <div className="mx-auto flex h-[100dvh] max-w-xl flex-col gap-4 overflow-hidden px-4 py-6">
       <TopBar />
       {showDebug ? (
         <p className="text-[10px] text-white/50">
