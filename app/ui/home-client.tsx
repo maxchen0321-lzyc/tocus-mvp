@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSwipeTopics, getTopicSourceDiagnostics } from "@/lib/topic-source";
-import { addCollection, getCollections, saveStance } from "@/lib/db";
+import { addCollection, getCollections, removeCollection, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { stanceValueToLabel, stanceValueToScore, stanceValueToUserStance } from "@/lib/stance";
 import { useAuth } from "../providers";
@@ -51,22 +51,17 @@ export default function HomeClient() {
     meta?: { dx: number; threshold: number; inputType: "touch" | "mouse" }
   ) => {
     if (!currentTopic || !authReady) return;
-    if (direction === "right") {
-      const result = await addCollection(currentTopic.id, user?.id ?? null);
-      if (result) {
-        setCollectionIds(result.data.map((item) => item.topic_id));
-        setCollectionDebug(
-          `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
-        );
-      }
-    }
     await trackEvent(direction === "right" ? "topic_swipe_right" : "topic_swipe_left", {
       userId: user?.id ?? null,
       anonymousId,
       topicId: currentTopic.id,
-      metadata: meta
+      metadata: direction === "right" ? { ...meta, action: "open_stance" } : meta
     });
-    setIndex((prev) => (prev + 1) % swipeTopics.length);
+    if (direction === "left") {
+      setIndex((prev) => (prev + 1) % swipeTopics.length);
+    } else {
+      handleOpenTopic();
+    }
   };
 
   const handleOpenTopic = () => {
@@ -116,11 +111,32 @@ export default function HomeClient() {
     [currentTopic, collectionIds]
   );
 
+  const handleToggleCollection = async () => {
+    if (!currentTopic || !authReady || anonymousId === "pending") return;
+    const userId = user?.id ?? null;
+    const action = collectionIds.includes(currentTopic.id) ? "remove" : "add";
+    const result =
+      action === "add"
+        ? await addCollection(currentTopic.id, userId)
+        : await removeCollection(currentTopic.id, userId);
+    if (result) {
+      setCollectionIds(result.data.map((item) => item.topic_id));
+      setCollectionDebug(
+        `source=${result.source} count=${result.data.length} owner=${userId ?? "none"} error=${result.error ?? "none"}`
+      );
+    }
+    await trackEvent(action === "add" ? "collection_add" : "collection_remove", {
+      userId,
+      anonymousId,
+      topicId: currentTopic.id
+    });
+  };
+
   const showDebug =
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   return (
-    <div className="mx-auto flex h-[100dvh] max-w-xl flex-col gap-4 overflow-hidden px-4 py-6">
+    <div className="mx-auto flex h-[100dvh] max-w-xl flex-col gap-4 overflow-hidden overflow-x-hidden px-4 py-6">
       <TopBar />
       {showDebug ? (
         <p className="text-[10px] text-white/50">
@@ -142,6 +158,7 @@ export default function HomeClient() {
                 onSwipeLeft={(meta) => handleSwipe("left", meta)}
                 onSwipeRight={(meta) => handleSwipe("right", meta)}
                 isCollected={isCollected}
+                onToggleCollection={handleToggleCollection}
               />
             </div>
             <p className="text-xs text-white/50">
