@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { mockTopics } from "@/data/mockTopics";
 import { saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
+import { stanceValueToLabel, stanceValueToScore } from "@/lib/stance";
 import { useAuth } from "@/app/providers";
 import StanceModal from "@/components/StanceModal";
 import CommentSection from "@/components/CommentSection";
@@ -158,12 +159,19 @@ export default function ReadClient() {
       setActionError("正在建立訪客身份，請稍候再試。");
       return;
     }
-    await saveStance(topicId, value, "final", anonymousId, user?.id ?? null);
+    const stanceScore = stanceValueToScore(value);
+    await saveStance(topicId, stanceScore, "final", anonymousId, user?.id ?? null);
     await trackEvent("stance_set_final", {
       userId: user?.id ?? null,
       anonymousId,
       topicId,
-      metadata: { value, userStance, view }
+      metadata: {
+        value: stanceValueToScore(value),
+        stance_value: value,
+        stance_label: stanceValueToLabel(value),
+        userStance,
+        view
+      }
     });
     router.push("/");
   };

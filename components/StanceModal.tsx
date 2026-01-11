@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { STANCE_OPTIONS, stanceValueToLabel } from "@/lib/stance";
 
 type Props = {
   open: boolean;
@@ -10,6 +11,7 @@ type Props = {
   label?: string;
   confirmDisabled?: boolean;
   confirmHint?: string;
+  initialValue?: number;
 };
 
 export default function StanceModal({
@@ -19,13 +21,14 @@ export default function StanceModal({
   onClose,
   label,
   confirmDisabled,
-  confirmHint
+  confirmHint,
+  initialValue
 }: Props) {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState<number>(0);
 
   useEffect(() => {
-    if (open) setValue(0);
-  }, [open]);
+    if (open) setValue(initialValue ?? 0);
+  }, [open, initialValue]);
 
   if (!open) return null;
 
@@ -38,22 +41,34 @@ export default function StanceModal({
             關閉
           </button>
         </div>
-        <p className="mt-2 text-xs text-white/60">
-          {label ?? "往右代表支持，往左代表反對"}
-        </p>
-        <div className="mt-4 space-y-3">
-          <input
-            type="range"
-            min={-100}
-            max={100}
-            value={value}
-            onChange={(event) => setValue(Number(event.target.value))}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-white/60">
-            <span>反對</span>
-            <span>{value}</span>
-            <span>支持</span>
+        <p className="mt-2 text-xs text-white/60">{label ?? "請選擇你的立場"}</p>
+        <div className="mt-4 space-y-4">
+          <div className="flex justify-between gap-2" role="radiogroup" aria-label="立場選擇">
+            {STANCE_OPTIONS.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  className="flex min-w-0 flex-1 flex-col items-center gap-2 rounded-xl px-2 py-2 text-center text-[11px] text-white/70"
+                  onClick={() => setValue(option.value)}
+                >
+                  <span className={isSelected ? "font-semibold text-white" : undefined}>
+                    {option.label}
+                  </span>
+                  <span
+                    className={`h-4 w-4 rounded-full border ${
+                      isSelected ? "border-white/80 bg-white" : "border-white/30"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          <div className="text-center text-xs text-white/60">
+            目前選擇：{stanceValueToLabel(value)}
           </div>
           {confirmHint ? <p className="text-xs text-amber-200">{confirmHint}</p> : null}
           <button

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getSwipeTopics, getTopicSourceDiagnostics } from "@/lib/topic-source";
 import { addCollection, getCollections, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
+import { stanceValueToLabel, stanceValueToScore, stanceValueToUserStance } from "@/lib/stance";
 import { useAuth } from "../providers";
 import SwipeCard from "@/components/SwipeCard";
 import TopBar from "@/components/TopBar";
@@ -87,14 +88,23 @@ export default function HomeClient() {
       return;
     }
     setStanceOpen(false);
-    await saveStance(currentTopic.id, value, "initial", anonymousId, user?.id ?? null);
+    const stanceValue = value;
+    const stanceScore = stanceValueToScore(stanceValue);
+    const stanceLabel = stanceValueToLabel(stanceValue);
+    const userStanceRaw = stanceValueToUserStance(stanceValue);
+    const userStance = userStanceRaw === "neutral" ? "supporting" : userStanceRaw;
+    await saveStance(currentTopic.id, stanceScore, "initial", anonymousId, user?.id ?? null);
     await trackEvent("stance_set_initial", {
       userId: user?.id ?? null,
       anonymousId,
       topicId: currentTopic.id,
-      metadata: { value }
+      metadata: {
+        value: stanceScore,
+        stance_value: stanceValue,
+        stance_label: stanceLabel,
+        userStance
+      }
     });
-    const userStance = value >= 0 ? "supporting" : "opposing";
     const view = userStance === "supporting" ? "opposing" : "supporting";
     router.push(
       `/read?topicId=${currentTopic.id}&userStance=${userStance}&view=${view}&entry=stance_initial`
