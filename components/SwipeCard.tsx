@@ -110,7 +110,7 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
   const opacity = 1 - Math.min(Math.abs(dx) / (threshold * 1.5), 0.35);
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-x-hidden touch-none">
+    <div className="flex h-full flex-col gap-4 overflow-x-hidden overscroll-contain touch-none">
       <div
         ref={cardRef}
         className="flex-1 min-h-0 touch-pan-y"
