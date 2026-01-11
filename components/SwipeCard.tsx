@@ -16,9 +16,17 @@ type Props = {
   onSwipeLeft: (meta: SwipeMeta) => void;
   onSwipeRight: (meta: SwipeMeta) => void;
   isCollected: boolean;
+  onToggleCollection: () => void;
 };
 
-export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, isCollected }: Props) {
+export default function SwipeCard({
+  topic,
+  onOpen,
+  onSwipeLeft,
+  onSwipeRight,
+  isCollected,
+  onToggleCollection
+}: Props) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const startX = useRef<number | null>(null);
   const startY = useRef<number | null>(null);
@@ -124,7 +132,13 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
           transition: dragging ? "none" : "transform 200ms ease, opacity 200ms ease"
         }}
       >
-        <TopicCard topic={topic} onClick={handleCardClick} className="h-full" />
+        <TopicCard
+          topic={topic}
+          onClick={handleCardClick}
+          className="h-full"
+          isCollected={isCollected}
+          onToggleCollection={onToggleCollection}
+        />
       </div>
       <div className="flex shrink-0 gap-3 text-sm">
         <button
@@ -137,7 +151,7 @@ export default function SwipeCard({ topic, onOpen, onSwipeLeft, onSwipeRight, is
           className="flex-1 rounded-xl bg-white/10 py-3"
           onClick={() => onSwipeRight({ dx: threshold, threshold, inputType: "touch" })}
         >
-          右滑：{isCollected ? "已收藏" : "喜歡"}
+          右滑：看文章
         </button>
       </div>
     </div>
