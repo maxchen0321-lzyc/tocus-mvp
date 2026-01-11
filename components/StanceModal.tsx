@@ -46,6 +46,7 @@ export default function StanceModal({
           <div className="flex justify-between gap-2" role="radiogroup" aria-label="立場選擇">
             {STANCE_OPTIONS.map((option) => {
               const isSelected = option.value === value;
+              const isExtreme = option.value === -2 || option.value === 2;
               return (
                 <button
                   key={option.value}
@@ -55,8 +56,19 @@ export default function StanceModal({
                   className="flex min-w-0 flex-1 flex-col items-center gap-2 rounded-xl px-2 py-2 text-center text-[11px] text-white/70"
                   onClick={() => setValue(option.value)}
                 >
-                  <span className={isSelected ? "font-semibold text-white" : undefined}>
-                    {option.label}
+                  <span
+                    className={`flex min-h-[28px] flex-col items-center justify-center leading-[14px] ${
+                      isSelected ? "font-semibold text-white" : undefined
+                    }`}
+                  >
+                    {isExtreme ? (
+                      <>
+                        <span className="whitespace-nowrap">極度</span>
+                        <span className="whitespace-nowrap">{option.value === -2 ? "不認同" : "認同"}</span>
+                      </>
+                    ) : (
+                      <span className="whitespace-nowrap">{option.label}</span>
+                    )}
                   </span>
                   <span
                     className={`h-4 w-4 rounded-full border ${
