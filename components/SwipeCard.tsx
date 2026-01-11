@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Topic } from "@/lib/types";
 import TopicCard from "./TopicCard";
 
@@ -35,6 +35,8 @@ export default function SwipeCard({
   const inputType = useRef<SwipeMeta["inputType"]>("touch");
   const suppressClick = useRef(false);
   const dragged = useRef(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
 
@@ -70,6 +72,45 @@ export default function SwipeCard({
     setDragging(false);
     dragged.current = false;
   };
+
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element) return;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      touchStartX.current = touch.clientX;
+      touchStartY.current = touch.clientY;
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch || touchStartX.current == null || touchStartY.current == null) return;
+      const deltaX = touch.clientX - touchStartX.current;
+      const deltaY = touch.clientY - touchStartY.current;
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 8) {
+        event.preventDefault();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+
+    element.addEventListener("touchstart", handleTouchStart, { passive: true });
+    element.addEventListener("touchmove", handleTouchMove, { passive: false });
+    element.addEventListener("touchend", handleTouchEnd, { passive: true });
+    element.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+
+    return () => {
+      element.removeEventListener("touchstart", handleTouchStart);
+      element.removeEventListener("touchmove", handleTouchMove);
+      element.removeEventListener("touchend", handleTouchEnd);
+      element.removeEventListener("touchcancel", handleTouchEnd);
+    };
+  }, []);
 
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     if (pointerId.current !== event.pointerId || startX.current == null) return;
@@ -121,7 +162,7 @@ export default function SwipeCard({
     <div className="flex h-full flex-col gap-4 overflow-x-hidden overscroll-contain touch-none">
       <div
         ref={cardRef}
-        className="flex-1 min-h-0 touch-pan-y"
+        className="flex-1 min-h-0 touch-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
