@@ -70,9 +70,15 @@ export default function TopicCard({
           type="button"
           aria-pressed={Boolean(isCollected)}
           aria-label={isCollected ? "取消收藏" : "加入收藏"}
-          className={`absolute right-4 top-4 rounded-full border border-white/20 bg-black/20 p-2 transition ${
+          className={`absolute right-4 top-4 z-20 rounded-full border border-white/20 bg-black/20 p-2 transition ${
             isCollected ? "text-amber-200" : "text-white/70 hover:text-white"
           }`}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+          }}
+          onTouchStart={(event) => {
+            event.stopPropagation();
+          }}
           onClick={(event) => {
             event.stopPropagation();
             onToggleCollection?.();
