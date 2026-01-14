@@ -6,14 +6,15 @@ import { getSwipeTopics, getTopicSourceDiagnostics } from "@/lib/topic-source";
 import { addCollection, getCollections, removeCollection, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { stanceValueToLabel, stanceValueToScore, stanceValueToUserStance } from "@/lib/stance";
-import { useAuth } from "../providers";
+import { isPermanentUser, useAuth } from "../providers";
 import SwipeCard from "@/components/SwipeCard";
 import TopBar from "@/components/TopBar";
 import StanceModal from "@/components/StanceModal";
 
 export default function HomeClient() {
   const router = useRouter();
-  const { user, anonymousId, authReady, authError, supabaseHost, isAnonymous } = useAuth();
+  const { user, anonymousId, authReady, authError, supabaseHost } = useAuth();
+  const isSignedIn = isPermanentUser(user);
   const [index, setIndex] = useState(0);
   const [stanceOpen, setStanceOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
@@ -27,7 +28,7 @@ export default function HomeClient() {
 
   useEffect(() => {
     if (!authReady) return;
-    if (!user || isAnonymous) {
+    if (!isPermanentUser(user)) {
       setCollectionIds([]);
       setCollectionDebug("source=none count=0 owner=none error=auth_required");
       return;
@@ -38,7 +39,7 @@ export default function HomeClient() {
         `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
     });
-  }, [authReady, user, isAnonymous]);
+  }, [authReady, isSignedIn, user]);
 
   useEffect(() => {
     if (!currentTopic || anonymousId === "pending") return;
@@ -118,7 +119,7 @@ export default function HomeClient() {
 
   const handleToggleCollection = async () => {
     if (!currentTopic || !authReady || anonymousId === "pending") return;
-    if (!user || isAnonymous) {
+    if (!isPermanentUser(user)) {
       window.dispatchEvent(
         new CustomEvent("auth:open", {
           detail: { mode: "login", message: "登入後即可使用收藏功能" }

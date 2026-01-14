@@ -5,21 +5,21 @@ import Link from "next/link";
 import { topics } from "@/lib/data";
 import { getCollections, removeCollection } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
-import { useAuth } from "@/app/providers";
+import { isPermanentUser, useAuth } from "@/app/providers";
 import AuthModal from "@/components/auth/AuthModal";
 
 export default function CollectionsPage() {
-  const { user, anonymousId, authReady, authError, supabaseHost, isAnonymous, signOut } =
-    useAuth();
+  const { user, anonymousId, authReady, authError, supabaseHost, signOut } = useAuth();
   const [items, setItems] = useState<string[]>([]);
   const [debug, setDebug] = useState<string>("pending");
   const [authNotice, setAuthNotice] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
-  const canUseCollections = Boolean(user && !isAnonymous);
+  const isSignedIn = isPermanentUser(user);
+  const canUseCollections = isSignedIn;
 
   useEffect(() => {
     if (!authReady) return;
-    if (!canUseCollections) {
+    if (!isPermanentUser(user)) {
       setItems([]);
       setDebug("source=none count=0 owner=none error=auth_required");
       setAuthNotice("登入後即可使用收藏功能");
@@ -37,10 +37,10 @@ export default function CollectionsPage() {
         `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
     });
-  }, [authReady, canUseCollections, user]);
+  }, [authReady, isSignedIn, user]);
 
   const handleRemove = async (topicId: string) => {
-    if (!authReady || !canUseCollections || !user) return;
+    if (!authReady || !isPermanentUser(user)) return;
     const result = await removeCollection(topicId, user.id);
     if (result) {
       setItems(result.data.map((item) => item.topic_id));

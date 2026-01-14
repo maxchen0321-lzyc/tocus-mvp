@@ -106,6 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+export function isPermanentUser(user: User | null): user is User {
+  return Boolean(user && user.email && !user.is_anonymous);
+}
+
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

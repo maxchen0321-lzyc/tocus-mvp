@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { trackEvent } from "@/lib/events";
-import { useAuth } from "@/app/providers";
+import { isPermanentUser, useAuth } from "@/app/providers";
 import AuthModal from "./auth/AuthModal";
 
 export default function TopBar() {
@@ -12,9 +12,10 @@ export default function TopBar() {
   const { user, signOut, isLoading, anonymousId, authReady, isAnonymous } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
   const [authNotice, setAuthNotice] = useState<string | null>(null);
-  const showAccount = Boolean(user && !isAnonymous);
-  const showAuthButtons = !user || isAnonymous;
-  const canUseCollections = Boolean(user && !isAnonymous);
+  const isSignedIn = isPermanentUser(user);
+  const showAccount = isSignedIn;
+  const showAuthButtons = !isSignedIn;
+  const canUseCollections = isSignedIn;
 
   useEffect(() => {
     const handleAuthOpen = (event: Event) => {
