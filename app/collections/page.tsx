@@ -6,34 +6,50 @@ import { topics } from "@/lib/data";
 import { getCollections, removeCollection } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "@/app/providers";
-import { formatDate } from "@/lib/utils";
+import AuthModal from "@/components/auth/AuthModal";
 
 export default function CollectionsPage() {
-  const { user, anonymousId, authReady, authError, supabaseHost } = useAuth();
+  const { user, anonymousId, authReady, authError, supabaseHost, isAnonymous, signOut } =
+    useAuth();
   const [items, setItems] = useState<string[]>([]);
   const [debug, setDebug] = useState<string>("pending");
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const canUseCollections = Boolean(user && !isAnonymous);
 
   useEffect(() => {
     if (!authReady) return;
-    getCollections(user?.id ?? null).then((result) => {
+    if (!canUseCollections) {
+      setItems([]);
+      setDebug("source=none count=0 owner=none error=auth_required");
+      setAuthNotice("登入後即可使用收藏功能");
+      setAuthOpen(true);
+      return;
+    }
+    trackEvent("collection_open", {
+      userId: user.id,
+      anonymousId,
+      metadata: { entry: "page" }
+    });
+    getCollections(user.id).then((result) => {
       setItems(result.data.map((item) => item.topic_id));
       setDebug(
-        `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
+        `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
     });
-  }, [authReady, user?.id]);
+  }, [authReady, canUseCollections, user]);
 
   const handleRemove = async (topicId: string) => {
-    if (!authReady) return;
-    const result = await removeCollection(topicId, user?.id ?? null);
+    if (!authReady || !canUseCollections || !user) return;
+    const result = await removeCollection(topicId, user.id);
     if (result) {
       setItems(result.data.map((item) => item.topic_id));
       setDebug(
-        `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
+        `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
     }
     await trackEvent("collection_remove", {
-      userId: user?.id ?? null,
+      userId: user.id,
       anonymousId,
       topicId
     });
@@ -49,6 +65,7 @@ export default function CollectionsPage() {
           返回首頁
         </Link>
       </div>
+      {authNotice ? <p className="text-xs text-amber-200">{authNotice}</p> : null}
       <p className="text-[10px] text-white/40">ColDebug: {debug}</p>
       <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
       <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
@@ -59,30 +76,32 @@ export default function CollectionsPage() {
       {authError && !user ? (
         <p className="text-[10px] text-red-300">AuthError: {authError}</p>
       ) : null}
-      {list.length === 0 ? (
+      {!canUseCollections ? (
+        <div className="glass rounded-2xl p-4 text-white/60">登入後即可使用收藏功能</div>
+      ) : list.length === 0 ? (
         <div className="glass rounded-2xl p-4 text-white/60">尚未收藏任何議題</div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {list.map((topic) => (
-            <div key={topic.id} className="glass rounded-2xl p-4">
-              <div className="flex items-center justify-between text-xs text-white/60">
-                <span>{formatDate(topic.happenedAt)}</span>
-                <span className="rounded-full border border-white/20 px-2 py-0.5">
-                  {topic.tag}
-                </span>
+            <div key={topic.id} className="glass flex items-center justify-between rounded-xl px-4 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{topic.title}</p>
+                <p className="text-xs text-white/60">{topic.tag}</p>
               </div>
-              <h2 className="mt-2 text-base font-semibold">{topic.title}</h2>
-              <p className="mt-2 text-sm text-white/80">{topic.summary}</p>
-              <button
-                className="mt-3 text-xs text-red-300"
-                onClick={() => handleRemove(topic.id)}
-              >
+              <button className="text-xs text-red-300" onClick={() => handleRemove(topic.id)}>
                 移除收藏
               </button>
             </div>
           ))}
         </div>
       )}
+      <AuthModal
+        open={authOpen}
+        mode="login"
+        onClose={() => setAuthOpen(false)}
+        user={canUseCollections ? user : null}
+        onSignOut={signOut}
+      />
     </div>
   );
 }

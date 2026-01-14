@@ -1,16 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { trackEvent } from "@/lib/events";
 import { useAuth } from "@/app/providers";
 import AuthModal from "./auth/AuthModal";
 
 export default function TopBar() {
+  const router = useRouter();
   const { user, signOut, isLoading, anonymousId, authReady, isAnonymous } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
   const showAccount = Boolean(user && !isAnonymous);
   const showAuthButtons = !user || isAnonymous;
+  const canUseCollections = Boolean(user && !isAnonymous);
+
+  useEffect(() => {
+    const handleAuthOpen = (event: Event) => {
+      const detail = (event as CustomEvent<{ mode?: "login" | "signup"; message?: string }>).detail;
+      if (detail?.message) {
+        setAuthNotice(detail.message);
+        window.setTimeout(() => setAuthNotice(null), 3000);
+      }
+      setAuthMode(detail?.mode ?? "login");
+    };
+    window.addEventListener("auth:open", handleAuthOpen as EventListener);
+    return () => {
+      window.removeEventListener("auth:open", handleAuthOpen as EventListener);
+    };
+  }, []);
+
+  const openAuthNotice = (message: string) => {
+    setAuthNotice(message);
+    window.setTimeout(() => setAuthNotice(null), 3000);
+    setAuthMode("login");
+  };
 
   return (
     <>
@@ -49,22 +74,29 @@ export default function TopBar() {
           >
             Metrics
           </Link>
-          <Link
+          <button
             className="rounded-full border border-white/20 px-3 py-1 text-xs"
-            href="/collections"
             onClick={() => {
               if (!authReady || anonymousId === "pending") return;
+              if (!canUseCollections) {
+                openAuthNotice("登入後即可使用收藏功能");
+                return;
+              }
               trackEvent("collection_open", {
                 userId: user?.id ?? null,
                 anonymousId,
                 metadata: { entry: "header" }
               });
+              router.push("/collections");
             }}
           >
             收藏
-          </Link>
+          </button>
         </div>
       </div>
+      {authNotice ? (
+        <p className="mt-2 text-[10px] text-amber-200">{authNotice}</p>
+      ) : null}
       <AuthModal
         open={authMode !== null}
         mode={authMode ?? "login"}

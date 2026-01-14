@@ -33,6 +33,7 @@ export type EventName =
   | "topic_impression"
   | "topic_swipe_left"
   | "topic_swipe_right"
+  | "collection_add"
   | "collection_open"
   | "collection_remove"
   | "stance_set_initial"
