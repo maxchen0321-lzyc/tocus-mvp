@@ -43,41 +43,63 @@ export default function StanceModal({
         </div>
         <p className="mt-2 text-xs text-white/60">{label ?? "請選擇你的立場"}</p>
         <div className="mt-4 space-y-4">
-          <div className="flex justify-between gap-2" role="radiogroup" aria-label="立場選擇">
-            {STANCE_OPTIONS.map((option) => {
-              const isSelected = option.value === value;
-              const isExtreme = option.value === -2 || option.value === 2;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  className="flex min-w-0 flex-1 flex-col items-center gap-2 rounded-xl px-2 py-2 text-center text-[11px] text-white/70"
-                  onClick={() => setValue(option.value)}
-                >
-                  <span
-                    className={`flex min-h-[28px] flex-col items-center justify-center leading-[14px] ${
+          <div role="radiogroup" aria-label="立場選擇">
+            <div className="grid grid-cols-7 gap-2 text-center text-[11px] leading-tight text-white/70">
+              {STANCE_OPTIONS.map((option) => {
+                const isSelected = option.value === value;
+                const isExtreme = option.value === -3 || option.value === 3;
+                const isSlight = option.value === -1 || option.value === 1;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`flex min-h-[28px] flex-col items-center justify-start ${
                       isSelected ? "font-semibold text-white" : undefined
                     }`}
+                    onClick={() => setValue(option.value)}
                   >
                     {isExtreme ? (
                       <>
-                        <span className="whitespace-nowrap">極度</span>
-                        <span className="whitespace-nowrap">{option.value === -2 ? "不認同" : "認同"}</span>
+                        <span className="block">極度</span>
+                        <span className="block whitespace-nowrap">
+                          {option.value === -3 ? "不支持" : "支持"}
+                        </span>
+                      </>
+                    ) : isSlight ? (
+                      <>
+                        <span className="block">稍微</span>
+                        <span className="block whitespace-nowrap">
+                          {option.value === -1 ? "不支持" : "支持"}
+                        </span>
                       </>
                     ) : (
-                      <span className="whitespace-nowrap">{option.label}</span>
+                      <span>{option.label}</span>
                     )}
-                  </span>
-                  <span
-                    className={`h-4 w-4 rounded-full border ${
-                      isSelected ? "border-white/80 bg-white" : "border-white/30"
-                    }`}
-                  />
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2 grid h-10 grid-cols-7 place-items-center gap-2">
+              {STANCE_OPTIONS.map((option) => {
+                const isSelected = option.value === value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    className="flex w-full items-center justify-center"
+                    onClick={() => setValue(option.value)}
+                  >
+                    <span
+                      className={`h-4 w-4 rounded-full border ${
+                        isSelected ? "border-white/80 bg-white" : "border-white/30"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <div className="text-center text-xs text-white/60">
             目前選擇：{stanceValueToLabel(value)}
