@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { topics } from "@/lib/data";
+import { getAllTopics } from "@/lib/topic-source";
 import { getCollections, removeCollection } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
 import { hasSupabaseConfig } from "@/lib/env";
@@ -72,6 +72,7 @@ export default function CollectionsPage() {
     });
   };
 
+  const topics = getAllTopics();
   const topicBySlug = new Map(
     topics.map((topic) => {
       const key = topic.slug ?? topic.id;
@@ -98,9 +99,12 @@ export default function CollectionsPage() {
       ) : null}
       {showDebug && canUseCollections ? (
         <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] text-white/70">
-          <p>Raw topic_ids: {items.join(", ") || "none"}</p>
+          <p>Raw topic_ids: {items.slice(0, 10).join(", ") || "none"}</p>
+          <p>Topic slugs: {topics.slice(0, 10).map((topic) => topic.slug ?? topic.id).join(", ")}</p>
           {missingTopicIds.length > 0 ? (
-            <p className="text-amber-200">Missing topic_ids: {missingTopicIds.join(", ")}</p>
+            <p className="text-amber-200">
+              Missing topic_ids: {missingTopicIds.slice(0, 10).join(", ")}
+            </p>
           ) : null}
         </div>
       ) : null}

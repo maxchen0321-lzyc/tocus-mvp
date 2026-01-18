@@ -52,6 +52,8 @@ const topicState = buildTopicState();
 
 export const getSwipeTopics = (): UiTopic[] => topicState.swipeTopics;
 
+export const getAllTopics = (): UiTopic[] => topicState.allTopics;
+
 export const getTopicById = (id: string): UiTopic | undefined =>
   topicState.allTopics.find((topic) => topic.id === id);
 
