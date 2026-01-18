@@ -220,19 +220,19 @@ export default function HomeClient() {
             </p>
             {showDebug ? (
               <>
-                <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
+                <p className="text-[10px] text-muted/60">ColDebug: {collectionDebug}</p>
                 {collectionError ? (
-                  <p className="text-[10px] text-red-300">ColError: {collectionError}</p>
+                  <p className="text-[10px] text-red-600">ColError: {collectionError}</p>
                 ) : null}
                 {collectionDiag ? (
-                  <p className="text-[10px] text-white/40">ColDiag: {collectionDiag}</p>
+                  <p className="text-[10px] text-muted/60">ColDiag: {collectionDiag}</p>
                 ) : null}
                 {collectionInsertError ? (
-                  <p className="text-[10px] text-red-300">
+                  <p className="text-[10px] text-red-600">
                     ColInsertError: {collectionInsertError}
                   </p>
                 ) : null}
-                <p className="text-[10px] text-white/40">
+                <p className="text-[10px] text-muted/60">
                   AuthReady: {authReady ? "true" : "false"}
                 </p>
                 <p className="text-[10px] text-muted/60">UserId: {user?.id ?? "none"}</p>
@@ -240,10 +240,10 @@ export default function HomeClient() {
                 <p className="text-[10px] text-muted/60">
                   SupabaseHost: {supabaseHost ?? "unknown"}
                 </p>
-                <p className="text-[10px] text-white/40">
+                <p className="text-[10px] text-muted/60">
                   EnvHost: {supabaseEnvHost} · hasSupabaseConfig: {hasSupabaseConfig ? "true" : "false"}
                 </p>
-                <p className="text-[10px] text-white/40">
+                <p className="text-[10px] text-muted/60">
                   UserEmail: {user?.email ?? "none"} · isAnonymous: {isAnonymous ? "true" : "false"}
                 </p>
                 {authError && !user ? (

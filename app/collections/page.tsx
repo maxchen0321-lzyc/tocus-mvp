@@ -93,16 +93,16 @@ export default function CollectionsPage() {
           返回首頁
         </Link>
       </div>
-      {authNotice ? <p className="text-xs text-amber-200">{authNotice}</p> : null}
+      {authNotice ? <p className="text-xs text-amber-700">{authNotice}</p> : null}
       {collectionError && !showDebug ? (
-        <p className="text-xs text-red-300">讀取收藏失敗：{collectionError}</p>
+        <p className="text-xs text-red-600">讀取收藏失敗：{collectionError}</p>
       ) : null}
       {showDebug && canUseCollections ? (
-        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] text-white/70">
+        <div className="rounded-xl border border-border/60 bg-surface/70 px-4 py-3 text-[10px] text-muted">
           <p>Raw topic_ids: {items.slice(0, 10).join(", ") || "none"}</p>
           <p>Topic slugs: {topics.slice(0, 10).map((topic) => topic.slug ?? topic.id).join(", ")}</p>
           {missingTopicIds.length > 0 ? (
-            <p className="text-amber-200">
+            <p className="text-amber-700">
               Missing topic_ids: {missingTopicIds.slice(0, 10).join(", ")}
             </p>
           ) : null}
@@ -110,31 +110,31 @@ export default function CollectionsPage() {
       ) : null}
       {showDebug ? (
         <>
-          <p className="text-[10px] text-white/40">ColDebug: {debug}</p>
-          <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
-          <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
-          <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-          <p className="text-[10px] text-white/40">
+          <p className="text-[10px] text-muted/60">ColDebug: {debug}</p>
+          <p className="text-[10px] text-muted/60">AuthReady: {authReady ? "true" : "false"}</p>
+          <p className="text-[10px] text-muted/60">UserId: {user?.id ?? "none"}</p>
+          <p className="text-[10px] text-muted/60">AnonymousId: {anonymousId}</p>
+          <p className="text-[10px] text-muted/60">
             SupabaseHost: {supabaseHost ?? "unknown"}
           </p>
-          <p className="text-[10px] text-white/40">
+          <p className="text-[10px] text-muted/60">
             EnvHost: {supabaseEnvHost} · hasSupabaseConfig: {hasSupabaseConfig ? "true" : "false"}
           </p>
-          <p className="text-[10px] text-white/40">
+          <p className="text-[10px] text-muted/60">
             UserEmail: {user?.email ?? "none"} · isAnonymous: {isAnonymous ? "true" : "false"}
           </p>
           {authError && !user ? (
-            <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+            <p className="text-[10px] text-red-600">AuthError: {authError}</p>
           ) : null}
           {collectionError ? (
-            <p className="text-[10px] text-red-300">ColError: {collectionError}</p>
+            <p className="text-[10px] text-red-600">ColError: {collectionError}</p>
           ) : null}
         </>
       ) : null}
       {!canUseCollections ? (
-        <div className="glass rounded-2xl p-4 text-white/60">登入後即可使用收藏功能</div>
+        <div className="glass rounded-2xl p-4 text-muted">登入後即可使用收藏功能</div>
       ) : items.length === 0 ? (
-        <div className="glass rounded-2xl p-4 text-white/60">尚未收藏任何議題</div>
+        <div className="glass rounded-2xl p-4 text-muted">尚未收藏任何議題</div>
       ) : (
         <div className="space-y-2">
           {rows.map(({ topicId, topic }) => (
@@ -146,9 +146,9 @@ export default function CollectionsPage() {
                 <p className="truncate text-sm font-semibold">
                   {topic ? topic.title : "(找不到議題資料)"}
                 </p>
-                <p className="text-xs text-white/60">{topic ? topic.tag : "-"}</p>
+                <p className="text-xs text-muted">{topic ? topic.tag : "-"}</p>
               </div>
-              <button className="text-xs text-red-300" onClick={() => handleRemove(topicId)}>
+              <button className="text-xs text-red-600" onClick={() => handleRemove(topicId)}>
                 移除收藏
               </button>
             </div>

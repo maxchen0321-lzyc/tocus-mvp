@@ -57,12 +57,12 @@ export default function TopicCard({
         <span>{formatDate(meta.publishedAt)}</span>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 pr-10">
-        <h2 className="text-lg font-semibold">{meta.title}</h2>
-        <span className="rounded-full border border-white/20 px-2 py-0.5 text-xs text-white/60">
+        <h2 className="text-lg font-semibold text-text">{meta.title}</h2>
+        <span className="rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted">
           {meta.category}
         </span>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 text-sm text-white/80">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 text-sm text-text/90">
         <p className="whitespace-pre-line">{meta.context}</p>
       </div>
       {canToggleCollection ? (
@@ -70,8 +70,8 @@ export default function TopicCard({
           type="button"
           aria-pressed={Boolean(isCollected)}
           aria-label={isCollected ? "取消收藏" : "加入收藏"}
-          className={`absolute right-4 top-4 z-20 rounded-full border border-white/20 bg-black/20 p-2 transition ${
-            isCollected ? "text-amber-200" : "text-white/70 hover:text-white"
+          className={`absolute right-4 top-4 z-20 rounded-full border border-border/70 bg-surface/80 p-2 text-muted transition hover:text-text ${
+            isCollected ? "text-accent" : "text-muted"
           }`}
           onPointerDown={(event) => {
             event.stopPropagation();
