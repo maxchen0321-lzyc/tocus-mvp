@@ -10,6 +10,8 @@ const config: Config = {
         "surface-hover": "hsl(var(--color-surface-hover) / <alpha-value>)",
         text: "hsl(var(--color-text) / <alpha-value>)",
         muted: "hsl(var(--color-muted) / <alpha-value>)",
+        inverse: "hsl(var(--color-inverse) / <alpha-value>)",
+        link: "hsl(var(--color-link) / <alpha-value>)",
         border: "hsl(var(--color-border) / <alpha-value>)",
         secondary: "hsl(var(--color-secondary) / <alpha-value>)",
         "secondary-muted": "hsl(var(--color-secondary-muted) / <alpha-value>)",

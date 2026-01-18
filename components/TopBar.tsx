@@ -76,7 +76,7 @@ export default function TopBar() {
             Metrics
           </Link>
           <button
-            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            className="rounded-full border border-border/60 px-3 py-1 text-xs text-text"
             onClick={() => {
               if (!authReady || anonymousId === "pending") return;
               if (!canUseCollections) {
@@ -95,9 +95,7 @@ export default function TopBar() {
           </button>
         </div>
       </div>
-      {authNotice ? (
-        <p className="mt-2 text-[10px] text-amber-200">{authNotice}</p>
-      ) : null}
+      {authNotice ? <p className="mt-2 text-[10px] text-amber-700">{authNotice}</p> : null}
       <AuthModal
         open={authMode !== null}
         mode={authMode ?? "login"}
