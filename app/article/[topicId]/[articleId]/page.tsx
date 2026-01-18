@@ -116,7 +116,7 @@ export default function ArticlePage() {
 
   if (!article || !topic) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-white/60">
+      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-muted">
         找不到文章
       </div>
     );
@@ -125,37 +125,40 @@ export default function ArticlePage() {
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
       <div className="space-y-2">
-        <p className="text-xs text-white/60">{topic.title}</p>
+        <p className="text-xs text-muted">{topic.title}</p>
         <h1 className="text-2xl font-semibold">{article.title}</h1>
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-muted/70">
           {article.author} · {article.stance === "supporting" ? "支持方" : "反方"}
         </p>
       </div>
-      <article className="glass rounded-2xl p-5 text-sm leading-7 text-white/90">
+      <article className="glass rounded-2xl p-5 text-sm leading-7 text-text/90">
         {article.content}
       </article>
       <section className="glass rounded-2xl p-4">
         <h2 className="text-sm font-semibold">留言區</h2>
         <div className="mt-3 space-y-2">
           <textarea
-            className="w-full rounded-xl bg-white/10 p-3 text-sm"
+            className="w-full rounded-xl border border-border bg-surface p-3 text-sm"
             rows={3}
             placeholder="留下你的想法"
             value={commentText}
             onChange={(event) => setCommentText(event.target.value)}
           />
-          <button className="rounded-xl bg-white/10 px-4 py-2 text-sm" onClick={handleCreateComment}>
+          <button
+            className="rounded-xl bg-accent px-4 py-2 text-sm text-text transition hover:bg-accent-muted"
+            onClick={handleCreateComment}
+          >
             送出留言
           </button>
         </div>
         <div className="mt-4 space-y-3">
           {comments.length === 0 ? (
-            <p className="text-xs text-white/50">尚無留言</p>
+            <p className="text-xs text-muted/70">尚無留言</p>
           ) : (
             comments.map((comment) => (
-              <div key={comment.id} className="rounded-xl border border-white/10 p-3 text-xs">
-                <p className="text-white/70">{comment.content}</p>
-                <p className="mt-2 text-[10px] text-white/40">
+              <div key={comment.id} className="rounded-xl border border-border/70 p-3 text-xs">
+                <p className="text-text/90">{comment.content}</p>
+                <p className="mt-2 text-[10px] text-muted/60">
                   {new Date(comment.createdAt).toLocaleString("zh-TW")}
                 </p>
               </div>
@@ -164,16 +167,22 @@ export default function ArticlePage() {
         </div>
       </section>
       <div className="sticky bottom-4 mt-auto space-y-3">
-        <button className="w-full rounded-xl border border-white/20 py-3 text-sm" onClick={handleNextSame}>
+        <button
+          className="w-full rounded-xl border border-secondary/70 bg-secondary-muted py-3 text-sm text-text transition hover:bg-secondary"
+          onClick={handleNextSame}
+        >
           繼續看同一方文章
         </button>
         <button
-          className="w-full rounded-xl border border-white/20 py-3 text-sm"
+          className="w-full rounded-xl border border-secondary/70 bg-secondary-muted py-3 text-sm text-text transition hover:bg-secondary"
           onClick={handleNextOpposite}
         >
           看反方文章
         </button>
-        <button className="w-full rounded-xl bg-white/10 py-3 text-sm" onClick={handleReadComplete}>
+        <button
+          className="w-full rounded-xl bg-accent py-3 text-sm text-text transition hover:bg-accent-muted"
+          onClick={handleReadComplete}
+        >
           結束閱讀
         </button>
       </div>

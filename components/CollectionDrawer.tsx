@@ -56,24 +56,24 @@ export default function CollectionDrawer({ open, onClose }: Props) {
   const list = topics.filter((topic) => items.includes(topic.id));
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-black/60">
+    <div className="fixed inset-0 z-40 flex justify-end bg-text/50">
       <div className="glass h-full w-full max-w-sm p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">收藏</h2>
-          <button className="text-sm text-white/60" onClick={onClose}>
+          <button className="text-sm text-muted" onClick={onClose}>
             關閉
           </button>
         </div>
         <div className="mt-4 space-y-3 text-sm">
           {list.length === 0 ? (
-            <p className="text-white/60">尚未收藏任何議題</p>
+            <p className="text-muted">尚未收藏任何議題</p>
           ) : (
             list.map((topic) => (
-              <div key={topic.id} className="rounded-xl border border-white/10 p-3">
+              <div key={topic.id} className="rounded-xl border border-border/70 p-3">
                 <p className="text-sm font-semibold">{topic.title}</p>
-                <p className="text-xs text-white/60">{topic.tag}</p>
+                <p className="text-xs text-muted">{topic.tag}</p>
                 <button
-                  className="mt-2 text-xs text-red-300"
+                  className="mt-2 text-xs text-red-600"
                   onClick={() => handleRemove(topic.id)}
                 >
                   移除收藏

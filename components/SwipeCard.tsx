@@ -183,13 +183,13 @@ export default function SwipeCard({
       </div>
       <div className="flex shrink-0 gap-3 text-sm">
         <button
-          className="flex-1 rounded-xl border border-white/20 py-3"
+          className="flex-1 rounded-xl border border-secondary/70 bg-secondary-muted py-3 text-text transition hover:bg-secondary"
           onClick={() => onSwipeLeft({ dx: -threshold, threshold, inputType: "touch" })}
         >
           左滑：不喜歡
         </button>
         <button
-          className="flex-1 rounded-xl bg-white/10 py-3"
+          className="flex-1 rounded-xl bg-accent py-3 text-text transition hover:bg-accent-muted"
           onClick={() => onSwipeRight({ dx: threshold, threshold, inputType: "touch" })}
         >
           右滑：看文章

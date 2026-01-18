@@ -45,36 +45,36 @@ export default function CollectionsPage() {
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-4 px-4 py-6 text-sm">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">收藏</h1>
-        <Link className="text-xs text-white/60" href="/">
+        <Link className="text-xs text-muted" href="/">
           返回首頁
         </Link>
       </div>
-      <p className="text-[10px] text-white/40">ColDebug: {debug}</p>
-      <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
-      <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
-      <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-      <p className="text-[10px] text-white/40">
+      <p className="text-[10px] text-muted/60">ColDebug: {debug}</p>
+      <p className="text-[10px] text-muted/60">AuthReady: {authReady ? "true" : "false"}</p>
+      <p className="text-[10px] text-muted/60">UserId: {user?.id ?? "none"}</p>
+      <p className="text-[10px] text-muted/60">AnonymousId: {anonymousId}</p>
+      <p className="text-[10px] text-muted/60">
         SupabaseHost: {supabaseHost ?? "unknown"}
       </p>
       {authError && !user ? (
-        <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+        <p className="text-[10px] text-red-600">AuthError: {authError}</p>
       ) : null}
       {list.length === 0 ? (
-        <div className="glass rounded-2xl p-4 text-white/60">尚未收藏任何議題</div>
+        <div className="glass rounded-2xl p-4 text-muted">尚未收藏任何議題</div>
       ) : (
         <div className="space-y-3">
           {list.map((topic) => (
             <div key={topic.id} className="glass rounded-2xl p-4">
-              <div className="flex items-center justify-between text-xs text-white/60">
+              <div className="flex items-center justify-between text-xs text-muted">
                 <span>{formatDate(topic.happenedAt)}</span>
-                <span className="rounded-full border border-white/20 px-2 py-0.5">
+                <span className="rounded-full border border-secondary/60 bg-secondary-muted px-2 py-0.5 text-text">
                   {topic.tag}
                 </span>
               </div>
               <h2 className="mt-2 text-base font-semibold">{topic.title}</h2>
-              <p className="mt-2 text-sm text-white/80">{topic.summary}</p>
+              <p className="mt-2 text-sm text-text/90">{topic.summary}</p>
               <button
-                className="mt-3 text-xs text-red-300"
+                className="mt-3 text-xs text-red-600"
                 onClick={() => handleRemove(topic.id)}
               >
                 移除收藏

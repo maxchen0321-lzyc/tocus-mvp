@@ -27,17 +27,20 @@ export default function AuthModal({ open, mode, onClose, user, onSignOut }: Prop
   if (!open) return null;
   if (user) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-text/50 p-4">
         <div className="glass w-full max-w-sm rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">帳號</h2>
-            <button className="text-sm text-white/60" onClick={onClose}>
+            <button className="text-sm text-muted" onClick={onClose}>
               關閉
             </button>
           </div>
           <div className="mt-4 space-y-3 text-sm">
             <p>已登入：{user.email}</p>
-            <button className="w-full rounded-xl bg-white/10 px-4 py-2" onClick={onSignOut}>
+            <button
+              className="w-full rounded-xl bg-secondary-muted px-4 py-2 text-text"
+              onClick={onSignOut}
+            >
               登出
             </button>
           </div>
@@ -123,48 +126,48 @@ export default function AuthModal({ open, mode, onClose, user, onSignOut }: Prop
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text/50 p-4">
       <div className="glass w-full max-w-sm rounded-2xl p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{mode === "login" ? "登入" : "註冊"}</h2>
-          <button className="text-sm text-white/60" onClick={onClose}>
+          <button className="text-sm text-muted" onClick={onClose}>
             關閉
           </button>
         </div>
         <div className="mt-4 space-y-3 text-sm">
           <label className="block space-y-1">
-            <span className="text-xs text-white/60">Email</span>
+            <span className="text-xs text-muted">Email</span>
             <input
-              className="w-full rounded-xl bg-white/10 px-3 py-2"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-xs text-white/60">Password</span>
+            <span className="text-xs text-muted">Password</span>
             <input
               type="password"
-              className="w-full rounded-xl bg-white/10 px-3 py-2"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
           </label>
           {mode === "signup" ? (
             <label className="block space-y-1">
-              <span className="text-xs text-white/60">Confirm Password</span>
+              <span className="text-xs text-muted">Confirm Password</span>
               <input
                 type="password"
-                className="w-full rounded-xl bg-white/10 px-3 py-2"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
             </label>
           ) : null}
-          {error ? <p className="text-xs text-red-300">{error}</p> : null}
-          {notice ? <p className="text-xs text-emerald-300">{notice}</p> : null}
+          {error ? <p className="text-xs text-red-600">{error}</p> : null}
+          {notice ? <p className="text-xs text-accent">{notice}</p> : null}
           {mode === "login" ? (
             <button
-              className="w-full rounded-xl bg-white/10 px-4 py-2"
+              className="w-full rounded-xl bg-accent px-4 py-2 text-text transition hover:bg-accent-muted"
               onClick={handleLogin}
               disabled={loading}
             >
@@ -172,7 +175,7 @@ export default function AuthModal({ open, mode, onClose, user, onSignOut }: Prop
             </button>
           ) : (
             <button
-              className="w-full rounded-xl bg-white/10 px-4 py-2"
+              className="w-full rounded-xl bg-accent px-4 py-2 text-text transition hover:bg-accent-muted"
               onClick={handleSignUp}
               disabled={loading}
             >
@@ -181,7 +184,7 @@ export default function AuthModal({ open, mode, onClose, user, onSignOut }: Prop
           )}
           {notice ? (
             <button
-              className="w-full rounded-xl border border-white/20 px-4 py-2 text-xs"
+              className="w-full rounded-xl border border-border px-4 py-2 text-xs"
               onClick={onClose}
             >
               回到登入
