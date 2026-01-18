@@ -89,7 +89,7 @@ export default function CollectionsPage() {
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-4 px-4 py-6 text-sm">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">收藏</h1>
-        <Link className="text-xs text-white/60" href="/">
+        <Link className="text-xs text-muted" href="/">
           返回首頁
         </Link>
       </div>

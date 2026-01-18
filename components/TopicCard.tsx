@@ -53,7 +53,7 @@ export default function TopicCard({
       role={isClickable ? "button" : undefined}
       tabIndex={isClickable ? 0 : undefined}
     >
-      <div className="flex items-center justify-between text-xs text-white/60">
+      <div className="flex items-center justify-between text-xs text-muted">
         <span>{formatDate(meta.publishedAt)}</span>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 pr-10">

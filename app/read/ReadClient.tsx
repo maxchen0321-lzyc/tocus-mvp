@@ -182,11 +182,11 @@ export default function ReadClient() {
     const availableIds = mockTopics.slice(0, 5).map((item) => item.id).join(", ");
     const availableStances = availableStancesForTopic;
     return (
-      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-white/60">
+      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-muted">
         <div className="space-y-2 text-center">
           <p>找不到 view={view} 的文章</p>
           {showDebug ? (
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-muted/60">
               topicId={topicId || "none"} · userStance={userStance} · view={view} ·
               foundArticleId={article?.id ?? "none"} · foundArticleStance=
               {article?.stance ?? "none"} · availableStances=
@@ -205,14 +205,14 @@ export default function ReadClient() {
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
       <div className="space-y-2">
-        <p className="text-xs text-white/60">{topic.title}</p>
+        <p className="text-xs text-muted">{topic.title}</p>
         <h1 className="text-2xl font-semibold">{article.title}</h1>
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-muted/70">
           {article.author} · {article.stance === "pro" ? "支持方" : "反方"}
         </p>
-        <p className="text-xs text-white/50">撰寫時間：{formatDateTime(article.publishedAt)}</p>
+        <p className="text-xs text-muted/70">撰寫時間：{formatDateTime(article.publishedAt)}</p>
         {showDebug ? (
-          <p className="text-[10px] text-white/40">
+          <p className="text-[10px] text-muted/60">
             topicId={topicId} · userStance={userStance} · view={view} ·
             foundArticleId={article.id} · foundArticleStance={article.stance} ·
             availableStances=
@@ -223,27 +223,27 @@ export default function ReadClient() {
         ) : null}
       </div>
 
-      <article className="glass rounded-2xl p-5">
+      <article className="glass rounded-2xl p-5 text-text/90">
         <ArticleRenderer blocks={article.content} />
       </article>
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <button
-          className="flex-1 rounded-xl border border-white/20 py-3 text-sm"
+          className="flex-1 rounded-xl border border-secondary/70 bg-secondary-muted py-3 text-sm text-text transition hover:bg-secondary disabled:opacity-60"
           onClick={handleNextSame}
           disabled={!sameStanceArticle || anonymousId === "pending"}
         >
           繼續看同一方文章
         </button>
         <button
-          className="flex-1 rounded-xl border border-white/20 py-3 text-sm"
+          className="flex-1 rounded-xl border border-secondary/70 bg-secondary-muted py-3 text-sm text-text transition hover:bg-secondary disabled:opacity-60"
           onClick={handleNextOpposite}
           disabled={!oppositeArticle || anonymousId === "pending"}
         >
           看另一方文章
         </button>
         <button
-          className="flex-1 rounded-xl bg-white/10 py-3 text-sm"
+          className="flex-1 rounded-xl bg-accent py-3 text-sm text-text transition hover:bg-accent-muted disabled:opacity-60"
           onClick={handleReadComplete}
           disabled={anonymousId === "pending"}
         >
@@ -252,10 +252,10 @@ export default function ReadClient() {
       </div>
 
       {!sameStanceArticle ? (
-        <p className="text-xs text-white/50">目前只有一篇同立場文章。</p>
+        <p className="text-xs text-muted/70">目前只有一篇同立場文章。</p>
       ) : null}
 
-      {actionError ? <p className="text-xs text-amber-200">{actionError}</p> : null}
+      {actionError ? <p className="text-xs text-accent">{actionError}</p> : null}
 
       <CommentSection parentType="article" parentId={article.id} topicId={topicId} articleId={article.id} />
 
