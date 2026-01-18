@@ -22,6 +22,7 @@ export default function HomeClient() {
   const [collectionDebug, setCollectionDebug] = useState<string>("pending");
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [collectionDiag, setCollectionDiag] = useState<string | null>(null);
+  const [collectionInsertError, setCollectionInsertError] = useState<string | null>(null);
   const impressions = useRef(new Set<string>());
   const swipeTopics = getSwipeTopics();
   const topicDiagnostics = getTopicSourceDiagnostics();
@@ -139,6 +140,7 @@ export default function HomeClient() {
         `user=${userId} email=${user.email ?? "none"} payload=${JSON.stringify(payload)}`
       );
     }
+    setCollectionInsertError(null);
     const action = collectionIds.includes(currentTopic.id) ? "remove" : "add";
     const result =
       action === "add"
@@ -150,6 +152,9 @@ export default function HomeClient() {
         `source=${result.source} count=${result.data.length} owner=${userId} error=${result.error ?? "none"}`
       );
       setCollectionError(result.error);
+      if (showDebug) {
+        setCollectionInsertError(result.error);
+      }
       if (showDebug) {
         setCollectionDiag((prev) =>
           [
@@ -221,6 +226,11 @@ export default function HomeClient() {
                 ) : null}
                 {collectionDiag ? (
                   <p className="text-[10px] text-white/40">ColDiag: {collectionDiag}</p>
+                ) : null}
+                {collectionInsertError ? (
+                  <p className="text-[10px] text-red-300">
+                    ColInsertError: {collectionInsertError}
+                  </p>
                 ) : null}
                 <p className="text-[10px] text-white/40">
                   AuthReady: {authReady ? "true" : "false"}

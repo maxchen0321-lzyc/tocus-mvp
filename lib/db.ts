@@ -72,6 +72,11 @@ export async function getCollections(
     .select("topic_id, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+  console.log("getCollections result", {
+    user_id: userId,
+    rows: data?.length ?? 0,
+    error: error ?? null
+  });
   if (error) {
     const details = getErrorDetails(error);
     console.error("getCollections error", { code: details.code, message: details.message });
@@ -114,9 +119,10 @@ export async function addCollection(
     user_id: userId
   };
   console.log("addCollection payload", record);
-  const { error: insertError } = await supabaseBrowser
+  const { data: insertData, error: insertError } = await supabaseBrowser
     .from("collections")
     .upsert(record, { onConflict: "user_id,topic_id" });
+  console.log("addCollection result", { data: insertData ?? null, error: insertError ?? null });
   if (insertError) {
     const details = getErrorDetails(insertError);
     console.error("addCollection insert error", { code: details.code, message: details.message });

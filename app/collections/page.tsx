@@ -73,6 +73,7 @@ export default function CollectionsPage() {
   };
 
   const list = topics.filter((topic) => items.includes(topic.id));
+  const missingTopicIds = items.filter((topicId) => !topics.some((topic) => topic.id === topicId));
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-4 px-4 py-6 text-sm">
@@ -115,6 +116,16 @@ export default function CollectionsPage() {
         <div className="glass rounded-2xl p-4 text-white/60">尚未收藏任何議題</div>
       ) : (
         <div className="space-y-2">
+          {showDebug ? (
+            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] text-white/70">
+              <p>Raw topic_ids: {items.join(", ") || "none"}</p>
+              {missingTopicIds.length > 0 ? (
+                <p className="text-amber-200">
+                  Missing topic_ids: {missingTopicIds.join(", ")}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {list.map((topic) => (
             <div key={topic.id} className="glass flex items-center justify-between rounded-xl px-4 py-3">
               <div className="min-w-0">
@@ -126,6 +137,19 @@ export default function CollectionsPage() {
               </button>
             </div>
           ))}
+          {showDebug
+            ? missingTopicIds.map((topicId) => (
+                <div
+                  key={topicId}
+                  className="glass flex items-center justify-between rounded-xl px-4 py-3 text-xs text-amber-200"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate">找不到議題資料</p>
+                    <p className="text-[10px] text-amber-200/80">{topicId}</p>
+                  </div>
+                </div>
+              ))
+            : null}
         </div>
       )}
       <AuthModal
