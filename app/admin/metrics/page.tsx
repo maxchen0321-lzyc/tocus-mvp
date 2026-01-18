@@ -22,7 +22,7 @@ type StanceRow = {
 export default async function AdminMetricsPage() {
   if (!hasSupabaseConfig) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-white/60">
+      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-muted">
         請先在 .env.local 設定 Supabase keys
       </div>
     );
@@ -79,7 +79,7 @@ export default async function AdminMetricsPage() {
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-4 px-4 py-6 text-sm">
       <h1 className="text-xl font-semibold">/admin/metrics</h1>
-      <p className="text-xs text-white/60">日期：{startOfDay.toLocaleDateString("zh-TW")}</p>
+      <p className="text-xs text-muted">日期：{startOfDay.toLocaleDateString("zh-TW")}</p>
       <div className="glass rounded-2xl p-4">
         <ul className="space-y-2">
           <li>DAU: {dau}</li>

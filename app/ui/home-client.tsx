@@ -139,7 +139,7 @@ export default function HomeClient() {
     <div className="mx-auto flex h-[100dvh] max-w-xl flex-col gap-4 overflow-hidden overflow-x-hidden px-4 py-6">
       <TopBar />
       {showDebug ? (
-        <p className="text-[10px] text-white/50">
+        <p className="text-[10px] text-muted/70">
           DataSource: {topicDiagnostics.source} · TopicsCount: {topicDiagnostics.topicsCount} ·
           AdapterCountBeforeFilter: {topicDiagnostics.adapterCountBeforeFilter} ·
           AdapterCountAfterFilter: {topicDiagnostics.adapterCountAfterFilter} · Limit:{" "}
@@ -161,28 +161,28 @@ export default function HomeClient() {
                 onToggleCollection={handleToggleCollection}
               />
             </div>
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-muted/70">
               目前卡片 {index + 1}/{swipeTopics.length}
             </p>
             {showDebug ? (
               <>
-                <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
-                <p className="text-[10px] text-white/40">
+                <p className="text-[10px] text-muted/60">ColDebug: {collectionDebug}</p>
+                <p className="text-[10px] text-muted/60">
                   AuthReady: {authReady ? "true" : "false"}
                 </p>
-                <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
-                <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-                <p className="text-[10px] text-white/40">
+                <p className="text-[10px] text-muted/60">UserId: {user?.id ?? "none"}</p>
+                <p className="text-[10px] text-muted/60">AnonymousId: {anonymousId}</p>
+                <p className="text-[10px] text-muted/60">
                   SupabaseHost: {supabaseHost ?? "unknown"}
                 </p>
                 {authError && !user ? (
-                  <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+                  <p className="text-[10px] text-red-600">AuthError: {authError}</p>
                 ) : null}
               </>
             ) : null}
           </>
         ) : (
-          <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
+          <div className="glass rounded-2xl p-6 text-center text-sm text-muted">
             暫無議題
           </div>
         )}

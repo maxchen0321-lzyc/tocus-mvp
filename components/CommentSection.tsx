@@ -55,24 +55,27 @@ export default function CommentSection({
       <h2 className="text-sm font-semibold">留言區</h2>
       <div className="mt-3 space-y-2">
         <textarea
-          className="w-full rounded-xl bg-white/10 p-3 text-sm"
+          className="w-full rounded-xl border border-border bg-surface p-3 text-sm"
           rows={3}
           placeholder="留下你的想法"
           value={commentText}
           onChange={(event) => setCommentText(event.target.value)}
         />
-        <button className="rounded-xl bg-white/10 px-4 py-2 text-sm" onClick={handleCreateComment}>
+        <button
+          className="rounded-xl bg-accent px-4 py-2 text-sm text-text transition hover:bg-accent-muted"
+          onClick={handleCreateComment}
+        >
           送出留言
         </button>
       </div>
       <div className="mt-4 space-y-3">
         {comments.length === 0 ? (
-          <p className="text-xs text-white/50">尚無留言</p>
+          <p className="text-xs text-muted/70">尚無留言</p>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="rounded-xl border border-white/10 p-3 text-xs">
-              <p className="text-white/70">{comment.content}</p>
-              <p className="mt-2 text-[10px] text-white/40">
+            <div key={comment.id} className="rounded-xl border border-border/70 p-3 text-xs">
+              <p className="text-text/90">{comment.content}</p>
+              <p className="mt-2 text-[10px] text-muted/60">
                 {new Date(comment.createdAt).toLocaleString("zh-TW")}
               </p>
             </div>

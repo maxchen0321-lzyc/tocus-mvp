@@ -2,15 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: 45 78% 92%;
+  --color-surface: 42 80% 96%;
+  --color-surface-hover: 38 60% 90%;
+  --color-text: 28 28% 20%;
+  --color-muted: 28 18% 40%;
+  --color-border: 30 25% 80%;
+  --color-secondary: 28 45% 60%;
+  --color-secondary-muted: 32 55% 85%;
+  --color-accent: 22 65% 55%;
+  --color-accent-muted: 24 60% 80%;
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
-  @apply bg-neutral-950 text-neutral-50;
+  @apply bg-bg text-text;
 }
 
 .glass {
-  @apply bg-white/5 backdrop-blur border border-white/10;
+  @apply border border-border bg-surface shadow-sm;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  @apply outline-none ring-2 ring-accent/40 ring-offset-2 ring-offset-bg;
 }

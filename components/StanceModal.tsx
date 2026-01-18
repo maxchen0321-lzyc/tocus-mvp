@@ -33,18 +33,18 @@ export default function StanceModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text/60 p-4">
       <div className="glass w-full max-w-md rounded-2xl p-5">
         <div className="flex items-start justify-between">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button className="text-xs text-white/60" onClick={onClose}>
+          <button className="text-xs text-muted" onClick={onClose}>
             關閉
           </button>
         </div>
-        <p className="mt-2 text-xs text-white/60">{label ?? "請選擇你的立場"}</p>
+        <p className="mt-2 text-xs text-muted">{label ?? "請選擇你的立場"}</p>
         <div className="mt-4 space-y-4">
           <div role="radiogroup" aria-label="立場選擇">
-            <div className="grid grid-cols-7 gap-2 text-center text-[11px] leading-tight text-white/70">
+            <div className="grid grid-cols-7 gap-2 text-center text-[11px] leading-tight text-muted">
               {STANCE_OPTIONS.map((option) => {
                 const isSelected = option.value === value;
                 const isExtreme = option.value === -3 || option.value === 3;
@@ -54,7 +54,7 @@ export default function StanceModal({
                     key={option.value}
                     type="button"
                     className={`flex min-h-[28px] flex-col items-center justify-start ${
-                      isSelected ? "font-semibold text-white" : undefined
+                      isSelected ? "font-semibold text-text" : undefined
                     }`}
                     onClick={() => setValue(option.value)}
                   >
@@ -93,7 +93,7 @@ export default function StanceModal({
                   >
                     <span
                       className={`h-4 w-4 rounded-full border ${
-                        isSelected ? "border-white/80 bg-white" : "border-white/30"
+                        isSelected ? "border-accent bg-accent" : "border-border"
                       }`}
                     />
                   </button>
@@ -101,12 +101,12 @@ export default function StanceModal({
               })}
             </div>
           </div>
-          <div className="text-center text-xs text-white/60">
+          <div className="text-center text-xs text-muted">
             目前選擇：{stanceValueToLabel(value)}
           </div>
-          {confirmHint ? <p className="text-xs text-amber-200">{confirmHint}</p> : null}
+          {confirmHint ? <p className="text-xs text-accent">{confirmHint}</p> : null}
           <button
-            className="w-full rounded-xl bg-white/10 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-accent px-4 py-2 text-sm text-text transition hover:bg-accent-muted disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-accent-muted"
             onClick={() => onConfirm(value)}
             disabled={confirmDisabled}
           >

@@ -17,7 +17,7 @@ export default function TopBar() {
       <div className="flex items-center justify-between">
         {showAccount ? (
           <button
-            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            className="rounded-full border border-secondary/60 bg-secondary-muted px-3 py-1 text-xs text-text"
             onClick={() => setAuthMode("login")}
             disabled={isLoading}
           >
@@ -26,31 +26,31 @@ export default function TopBar() {
         ) : showAuthButtons ? (
           <div className="flex items-center gap-2">
             <button
-              className="rounded-full border border-white/20 px-3 py-1 text-xs"
+              className="rounded-full border border-secondary/60 bg-secondary-muted px-3 py-1 text-xs text-text"
               onClick={() => setAuthMode("login")}
               disabled={isLoading}
             >
               登入
             </button>
             <button
-              className="rounded-full border border-white/20 px-3 py-1 text-xs"
+              className="rounded-full border border-secondary/60 bg-secondary-muted px-3 py-1 text-xs text-text"
               onClick={() => setAuthMode("signup")}
               disabled={isLoading}
             >
               註冊
             </button>
-            {isAnonymous ? <span className="text-[10px] text-white/50">訪客</span> : null}
+            {isAnonymous ? <span className="text-[10px] text-muted/70">訪客</span> : null}
           </div>
         ) : null}
         <div className="flex items-center gap-2">
           <Link
-            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            className="rounded-full border border-secondary/60 bg-secondary-muted px-3 py-1 text-xs text-text"
             href="/admin/metrics"
           >
             Metrics
           </Link>
           <Link
-            className="rounded-full border border-white/20 px-3 py-1 text-xs"
+            className="rounded-full border border-secondary/60 bg-secondary-muted px-3 py-1 text-xs text-text"
             href="/collections"
             onClick={() => {
               if (!authReady || anonymousId === "pending") return;

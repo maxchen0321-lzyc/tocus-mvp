@@ -11,7 +11,7 @@ export default function TopicDetailPage() {
 
   if (!topic) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-white/60">
+      <div className="mx-auto flex min-h-screen max-w-xl items-center justify-center p-6 text-sm text-muted">
         找不到議題
       </div>
     );
@@ -19,7 +19,7 @@ export default function TopicDetailPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-6">
-      <Link className="text-xs text-white/60" href="/">
+      <Link className="text-xs text-muted" href="/">
         返回首頁
       </Link>
       <TopicDetail topic={topic} />
