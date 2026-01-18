@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getSwipeTopics, getTopicSourceDiagnostics } from "@/lib/topic-source";
 import { addCollection, getCollections, removeCollection, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
+import { hasSupabaseConfig } from "@/lib/env";
 import { stanceValueToLabel, stanceValueToScore, stanceValueToUserStance } from "@/lib/stance";
 import { isPermanentUser, useAuth } from "../providers";
 import SwipeCard from "@/components/SwipeCard";
@@ -172,6 +173,16 @@ export default function HomeClient() {
 
   const showDebug =
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
+  const supabaseEnvHost = (() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!url) return "missing";
+    try {
+      return new URL(url).host;
+    } catch {
+      return "invalid";
+    }
+  })();
+  const isAnonymous = Boolean(user && (user.is_anonymous || !user.email));
 
   return (
     <div className="mx-auto flex h-[100dvh] max-w-xl flex-col gap-4 overflow-hidden overflow-x-hidden px-4 py-6">
@@ -218,6 +229,12 @@ export default function HomeClient() {
                 <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
                 <p className="text-[10px] text-white/40">
                   SupabaseHost: {supabaseHost ?? "unknown"}
+                </p>
+                <p className="text-[10px] text-white/40">
+                  EnvHost: {supabaseEnvHost} · hasSupabaseConfig: {hasSupabaseConfig ? "true" : "false"}
+                </p>
+                <p className="text-[10px] text-white/40">
+                  UserEmail: {user?.email ?? "none"} · isAnonymous: {isAnonymous ? "true" : "false"}
                 </p>
                 {authError && !user ? (
                   <p className="text-[10px] text-red-300">AuthError: {authError}</p>

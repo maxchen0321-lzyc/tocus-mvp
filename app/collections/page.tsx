@@ -5,6 +5,7 @@ import Link from "next/link";
 import { topics } from "@/lib/data";
 import { getCollections, removeCollection } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
+import { hasSupabaseConfig } from "@/lib/env";
 import { isPermanentUser, useAuth } from "@/app/providers";
 import AuthModal from "@/components/auth/AuthModal";
 
@@ -19,6 +20,16 @@ export default function CollectionsPage() {
   const canUseCollections = isSignedIn;
   const showDebug =
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
+  const supabaseEnvHost = (() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!url) return "missing";
+    try {
+      return new URL(url).host;
+    } catch {
+      return "invalid";
+    }
+  })();
+  const isAnonymous = Boolean(user && (user.is_anonymous || !user.email));
 
   useEffect(() => {
     if (!authReady) return;
@@ -83,6 +94,12 @@ export default function CollectionsPage() {
           <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
           <p className="text-[10px] text-white/40">
             SupabaseHost: {supabaseHost ?? "unknown"}
+          </p>
+          <p className="text-[10px] text-white/40">
+            EnvHost: {supabaseEnvHost} · hasSupabaseConfig: {hasSupabaseConfig ? "true" : "false"}
+          </p>
+          <p className="text-[10px] text-white/40">
+            UserEmail: {user?.email ?? "none"} · isAnonymous: {isAnonymous ? "true" : "false"}
           </p>
           {authError && !user ? (
             <p className="text-[10px] text-red-300">AuthError: {authError}</p>

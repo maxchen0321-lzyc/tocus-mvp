@@ -31,12 +31,20 @@ export type DbResult<T> = {
   };
 };
 
-function getErrorMessage(err: unknown): string {
+function getErrorDetails(err: unknown): { message: string; code?: string } {
   if (err && typeof err === "object" && "message" in err) {
     const value = (err as { message?: unknown }).message;
-    return typeof value === "string" ? value : "unknown_error";
+    const message = typeof value === "string" ? value : "unknown_error";
+    const codeValue = "code" in err ? (err as { code?: unknown }).code : undefined;
+    const code = typeof codeValue === "string" ? codeValue : undefined;
+    return { message, code };
   }
-  return typeof err === "string" ? err : "unknown_error";
+  const fallback = typeof err === "string" ? err : "unknown_error";
+  return { message: fallback };
+}
+
+function getErrorMessage(err: unknown): string {
+  return getErrorDetails(err).message;
 }
 
 export async function getCollections(
@@ -58,13 +66,15 @@ export async function getCollections(
       debug: { action: "select", error: "missing_user_id" }
     };
   }
+  console.log("getCollections where", { user_id: userId });
   const { data, error } = await supabaseBrowser
     .from("collections")
     .select("topic_id, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) {
-    console.error("getCollections error", error);
+    const details = getErrorDetails(error);
+    console.error("getCollections error", { code: details.code, message: details.message });
   }
   return {
     data: (data ?? []) as CollectionRecord[],
@@ -103,11 +113,13 @@ export async function addCollection(
     topic_id: topicId,
     user_id: userId
   };
+  console.log("addCollection payload", record);
   const { error: insertError } = await supabaseBrowser
     .from("collections")
     .upsert(record, { onConflict: "user_id,topic_id" });
   if (insertError) {
-    console.error("addCollection insert error", insertError);
+    const details = getErrorDetails(insertError);
+    console.error("addCollection insert error", { code: details.code, message: details.message });
     return {
       data: [],
       error: getErrorMessage(insertError),
@@ -155,7 +167,8 @@ export async function removeCollection(
     .delete()
     .match({ topic_id: topicId, user_id: userId });
   if (error) {
-    console.error("removeCollection error", error);
+    const details = getErrorDetails(error);
+    console.error("removeCollection error", { code: details.code, message: details.message });
     return {
       data: [],
       error: getErrorMessage(error),
