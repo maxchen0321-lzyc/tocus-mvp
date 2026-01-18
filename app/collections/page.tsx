@@ -72,7 +72,12 @@ export default function CollectionsPage() {
     });
   };
 
-  const topicBySlug = new Map(topics.map((topic) => [topic.slug, topic]));
+  const topicBySlug = new Map(
+    topics.map((topic) => {
+      const key = topic.slug ?? topic.id;
+      return [key, topic];
+    })
+  );
   const rows = items.map((topicId) => ({
     topicId,
     topic: topicBySlug.get(topicId) ?? topics.find((topic) => topic.id === topicId) ?? null
