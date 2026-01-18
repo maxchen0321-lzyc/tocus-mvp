@@ -31,6 +31,14 @@ export type DbResult<T> = {
   };
 };
 
+function getErrorMessage(err: unknown): string {
+  if (err && typeof err === "object" && "message" in err) {
+    const value = (err as { message?: unknown }).message;
+    return typeof value === "string" ? value : "unknown_error";
+  }
+  return typeof err === "string" ? err : "unknown_error";
+}
+
 export async function getCollections(
   userId: string | null
 ): Promise<DbResult<CollectionRecord[]>> {
@@ -60,12 +68,12 @@ export async function getCollections(
   }
   return {
     data: (data ?? []) as CollectionRecord[],
-    error: error?.message ?? null,
+    error: error ? getErrorMessage(error) : null,
     source: "supabase",
     debug: {
       action: "select",
       payload: { user_id: userId },
-      error: error?.message ?? null
+      error: error ? getErrorMessage(error) : null
     }
   };
 }
@@ -102,12 +110,12 @@ export async function addCollection(
     console.error("addCollection insert error", insertError);
     return {
       data: [],
-      error: insertError.message,
+      error: getErrorMessage(insertError),
       source: "supabase",
       debug: {
         action: "insert",
         payload: record,
-        error: insertError.message
+        error: getErrorMessage(insertError)
       }
     };
   }
@@ -117,7 +125,7 @@ export async function addCollection(
     debug: {
       action: "insert",
       payload: record,
-      error: insertError?.message ?? null
+      error: null
     }
   };
 }
@@ -150,12 +158,12 @@ export async function removeCollection(
     console.error("removeCollection error", error);
     return {
       data: [],
-      error: error.message,
+      error: getErrorMessage(error),
       source: "supabase",
       debug: {
         action: "delete",
         payload: { topic_id: topicId, user_id: userId },
-        error: error.message
+        error: getErrorMessage(error)
       }
     };
   }
@@ -165,7 +173,7 @@ export async function removeCollection(
     debug: {
       action: "delete",
       payload: { topic_id: topicId, user_id: userId },
-      error: error?.message ?? null
+      error: null
     }
   };
 }
