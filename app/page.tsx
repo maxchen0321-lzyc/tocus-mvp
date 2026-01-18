@@ -69,7 +69,7 @@ export default function HomePage() {
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden overflow-x-hidden overscroll-none touch-none">
       {showDebug ? (
-        <div className="px-4 pt-2 text-[10px] text-muted/70">
+        <div className="px-4 pt-2 text-[10px] text-white/50">
           scrollY: {debugInfo.scrollY} · scrollTop: {debugInfo.scrollTop} · locked:{" "}
           {debugInfo.locked ? "true" : "false"}
         </div>

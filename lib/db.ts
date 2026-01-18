@@ -24,28 +24,72 @@ export type DbResult<T> = {
   data: T;
   error: string | null;
   source: "supabase" | "local";
+  debug?: {
+    action: "select" | "insert" | "delete";
+    payload?: Record<string, unknown>;
+    error?: string | null;
+  };
 };
+
+function getErrorDetails(err: unknown): { message: string; code?: string } {
+  if (err && typeof err === "object" && "message" in err) {
+    const value = (err as { message?: unknown }).message;
+    const message = typeof value === "string" ? value : "unknown_error";
+    const codeValue = "code" in err ? (err as { code?: unknown }).code : undefined;
+    const code = typeof codeValue === "string" ? codeValue : undefined;
+    return { message, code };
+  }
+  const fallback = typeof err === "string" ? err : "unknown_error";
+  return { message: fallback };
+}
+
+function getErrorMessage(err: unknown): string {
+  return getErrorDetails(err).message;
+}
 
 export async function getCollections(
   userId: string | null
 ): Promise<DbResult<CollectionRecord[]>> {
   if (!hasSupabaseConfig) {
-    return { data: [], error: "missing_supabase_keys", source: "local" };
+    return {
+      data: [],
+      error: "missing_supabase_keys",
+      source: "local",
+      debug: { action: "select", error: "missing_supabase_keys" }
+    };
   }
   if (!userId) {
-    return { data: [], error: "missing_user_id", source: "supabase" };
+    return {
+      data: [],
+      error: "missing_user_id",
+      source: "supabase",
+      debug: { action: "select", error: "missing_user_id" }
+    };
   }
+  console.log("getCollections where", { user_id: userId });
   const { data, error } = await supabaseBrowser
     .from("collections")
-    .select("*")
-    .eq("user_id", userId);
+    .select("topic_id, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  console.log("getCollections result", {
+    user_id: userId,
+    rows: data?.length ?? 0,
+    error: error ?? null
+  });
   if (error) {
-    console.error("getCollections error", error);
+    const details = getErrorDetails(error);
+    console.error("getCollections error", { code: details.code, message: details.message });
   }
   return {
     data: (data ?? []) as CollectionRecord[],
-    error: error?.message ?? null,
-    source: "supabase"
+    error: error ? getErrorMessage(error) : null,
+    source: "supabase",
+    debug: {
+      action: "select",
+      payload: { user_id: userId },
+      error: error ? getErrorMessage(error) : null
+    }
   };
 }
 
@@ -55,23 +99,53 @@ export async function addCollection(
 ): Promise<DbResult<CollectionRecord[]>> {
   console.log("addCollection called", { topicId, userId });
   if (!hasSupabaseConfig) {
-    return { data: [], error: "missing_supabase_keys", source: "local" };
+    return {
+      data: [],
+      error: "missing_supabase_keys",
+      source: "local",
+      debug: { action: "insert", error: "missing_supabase_keys" }
+    };
   }
   if (!userId) {
-    return { data: [], error: "missing_user_id", source: "supabase" };
+    return {
+      data: [],
+      error: "missing_user_id",
+      source: "supabase",
+      debug: { action: "insert", error: "missing_user_id" }
+    };
   }
   const record = {
     topic_id: topicId,
     user_id: userId
   };
-  const { error: insertError } = await supabaseBrowser
+  console.log("addCollection payload", record);
+  const { data: insertData, error: insertError } = await supabaseBrowser
     .from("collections")
     .upsert(record, { onConflict: "user_id,topic_id" });
+  console.log("addCollection result", { data: insertData ?? null, error: insertError ?? null });
   if (insertError) {
-    console.error("addCollection insert error", insertError);
-    return { data: [], error: insertError.message, source: "supabase" };
+    const details = getErrorDetails(insertError);
+    console.error("addCollection insert error", { code: details.code, message: details.message });
+    return {
+      data: [],
+      error: getErrorMessage(insertError),
+      source: "supabase",
+      debug: {
+        action: "insert",
+        payload: record,
+        error: getErrorMessage(insertError)
+      }
+    };
   }
-  return getCollections(userId);
+  const result = await getCollections(userId);
+  return {
+    ...result,
+    debug: {
+      action: "insert",
+      payload: record,
+      error: null
+    }
+  };
 }
 
 export async function removeCollection(
@@ -79,20 +153,48 @@ export async function removeCollection(
   userId: string | null
 ): Promise<DbResult<CollectionRecord[]>> {
   if (!hasSupabaseConfig) {
-    return { data: [], error: "missing_supabase_keys", source: "local" };
+    return {
+      data: [],
+      error: "missing_supabase_keys",
+      source: "local",
+      debug: { action: "delete", error: "missing_supabase_keys" }
+    };
   }
   if (!userId) {
-    return { data: [], error: "missing_user_id", source: "supabase" };
+    return {
+      data: [],
+      error: "missing_user_id",
+      source: "supabase",
+      debug: { action: "delete", error: "missing_user_id" }
+    };
   }
   const { error } = await supabaseBrowser
     .from("collections")
     .delete()
     .match({ topic_id: topicId, user_id: userId });
   if (error) {
-    console.error("removeCollection error", error);
-    return { data: [], error: error.message, source: "supabase" };
+    const details = getErrorDetails(error);
+    console.error("removeCollection error", { code: details.code, message: details.message });
+    return {
+      data: [],
+      error: getErrorMessage(error),
+      source: "supabase",
+      debug: {
+        action: "delete",
+        payload: { topic_id: topicId, user_id: userId },
+        error: getErrorMessage(error)
+      }
+    };
   }
-  return getCollections(userId);
+  const result = await getCollections(userId);
+  return {
+    ...result,
+    debug: {
+      action: "delete",
+      payload: { topic_id: topicId, user_id: userId },
+      error: null
+    }
+  };
 }
 
 export async function saveStance(

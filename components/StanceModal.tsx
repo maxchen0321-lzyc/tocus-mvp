@@ -44,7 +44,7 @@ export default function StanceModal({
         <p className="mt-2 text-xs text-muted">{label ?? "請選擇你的立場"}</p>
         <div className="mt-4 space-y-4">
           <div role="radiogroup" aria-label="立場選擇">
-            <div className="grid grid-cols-7 gap-2 text-center text-[11px] leading-tight text-muted">
+            <div className="grid grid-cols-7 gap-2 text-center text-[11px] leading-tight text-white/70">
               {STANCE_OPTIONS.map((option) => {
                 const isSelected = option.value === value;
                 const isExtreme = option.value === -3 || option.value === 3;
@@ -54,7 +54,7 @@ export default function StanceModal({
                     key={option.value}
                     type="button"
                     className={`flex min-h-[28px] flex-col items-center justify-start ${
-                      isSelected ? "font-semibold text-text" : undefined
+                      isSelected ? "font-semibold text-white" : undefined
                     }`}
                     onClick={() => setValue(option.value)}
                   >
@@ -93,7 +93,7 @@ export default function StanceModal({
                   >
                     <span
                       className={`h-4 w-4 rounded-full border ${
-                        isSelected ? "border-accent bg-accent" : "border-border"
+                        isSelected ? "border-white/80 bg-white" : "border-white/30"
                       }`}
                     />
                   </button>

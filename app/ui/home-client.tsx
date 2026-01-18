@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { getSwipeTopics, getTopicSourceDiagnostics } from "@/lib/topic-source";
 import { addCollection, getCollections, removeCollection, saveStance } from "@/lib/db";
 import { trackEvent } from "@/lib/events";
+import { hasSupabaseConfig } from "@/lib/env";
 import { stanceValueToLabel, stanceValueToScore, stanceValueToUserStance } from "@/lib/stance";
-import { useAuth } from "../providers";
+import { isPermanentUser, useAuth } from "../providers";
 import SwipeCard from "@/components/SwipeCard";
 import TopBar from "@/components/TopBar";
 import StanceModal from "@/components/StanceModal";
@@ -14,10 +15,14 @@ import StanceModal from "@/components/StanceModal";
 export default function HomeClient() {
   const router = useRouter();
   const { user, anonymousId, authReady, authError, supabaseHost } = useAuth();
+  const isSignedIn = isPermanentUser(user);
   const [index, setIndex] = useState(0);
   const [stanceOpen, setStanceOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [collectionDebug, setCollectionDebug] = useState<string>("pending");
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [collectionDiag, setCollectionDiag] = useState<string | null>(null);
+  const [collectionInsertError, setCollectionInsertError] = useState<string | null>(null);
   const impressions = useRef(new Set<string>());
   const swipeTopics = getSwipeTopics();
   const topicDiagnostics = getTopicSourceDiagnostics();
@@ -27,13 +32,20 @@ export default function HomeClient() {
 
   useEffect(() => {
     if (!authReady) return;
-    getCollections(user?.id ?? null).then((result) => {
+    if (!isPermanentUser(user)) {
+      setCollectionIds([]);
+      setCollectionDebug("source=none count=0 owner=none error=auth_required");
+      setCollectionError(null);
+      return;
+    }
+    getCollections(user.id).then((result) => {
       setCollectionIds(result.data.map((item) => item.topic_id));
       setCollectionDebug(
-        `source=${result.source} count=${result.data.length} owner=${user?.id ?? "none"} error=${result.error ?? "none"}`
+        `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
+      setCollectionError(result.error);
     });
-  }, [authReady, user?.id]);
+  }, [authReady, isSignedIn, user]);
 
   useEffect(() => {
     if (!currentTopic || anonymousId === "pending") return;
@@ -113,7 +125,22 @@ export default function HomeClient() {
 
   const handleToggleCollection = async () => {
     if (!currentTopic || !authReady || anonymousId === "pending") return;
-    const userId = user?.id ?? null;
+    if (!isPermanentUser(user)) {
+      window.dispatchEvent(
+        new CustomEvent("auth:open", {
+          detail: { mode: "login", message: "登入後即可使用收藏功能" }
+        })
+      );
+      return;
+    }
+    const userId = user.id;
+    const payload = { topic_id: currentTopic.id, user_id: userId };
+    if (showDebug) {
+      setCollectionDiag(
+        `user=${userId} email=${user.email ?? "none"} payload=${JSON.stringify(payload)}`
+      );
+    }
+    setCollectionInsertError(null);
     const action = collectionIds.includes(currentTopic.id) ? "remove" : "add";
     const result =
       action === "add"
@@ -122,8 +149,25 @@ export default function HomeClient() {
     if (result) {
       setCollectionIds(result.data.map((item) => item.topic_id));
       setCollectionDebug(
-        `source=${result.source} count=${result.data.length} owner=${userId ?? "none"} error=${result.error ?? "none"}`
+        `source=${result.source} count=${result.data.length} owner=${userId} error=${result.error ?? "none"}`
       );
+      setCollectionError(result.error);
+      if (showDebug) {
+        setCollectionInsertError(result.error);
+      }
+      if (showDebug) {
+        setCollectionDiag((prev) =>
+          [
+            prev,
+            `response=${JSON.stringify({
+              error: result.error ?? null,
+              debug: result.debug ?? null
+            })}`
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
+      }
     }
     await trackEvent(action === "add" ? "collection_add" : "collection_remove", {
       userId,
@@ -134,6 +178,16 @@ export default function HomeClient() {
 
   const showDebug =
     process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
+  const supabaseEnvHost = (() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!url) return "missing";
+    try {
+      return new URL(url).host;
+    } catch {
+      return "invalid";
+    }
+  })();
+  const isAnonymous = Boolean(user && (user.is_anonymous || !user.email));
 
   return (
     <div className="mx-auto flex h-[100dvh] max-w-xl flex-col gap-4 overflow-hidden overflow-x-hidden px-4 py-6">
@@ -166,14 +220,31 @@ export default function HomeClient() {
             </p>
             {showDebug ? (
               <>
-                <p className="text-[10px] text-muted/60">ColDebug: {collectionDebug}</p>
-                <p className="text-[10px] text-muted/60">
+                <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
+                {collectionError ? (
+                  <p className="text-[10px] text-red-300">ColError: {collectionError}</p>
+                ) : null}
+                {collectionDiag ? (
+                  <p className="text-[10px] text-white/40">ColDiag: {collectionDiag}</p>
+                ) : null}
+                {collectionInsertError ? (
+                  <p className="text-[10px] text-red-300">
+                    ColInsertError: {collectionInsertError}
+                  </p>
+                ) : null}
+                <p className="text-[10px] text-white/40">
                   AuthReady: {authReady ? "true" : "false"}
                 </p>
                 <p className="text-[10px] text-muted/60">UserId: {user?.id ?? "none"}</p>
                 <p className="text-[10px] text-muted/60">AnonymousId: {anonymousId}</p>
                 <p className="text-[10px] text-muted/60">
                   SupabaseHost: {supabaseHost ?? "unknown"}
+                </p>
+                <p className="text-[10px] text-white/40">
+                  EnvHost: {supabaseEnvHost} · hasSupabaseConfig: {hasSupabaseConfig ? "true" : "false"}
+                </p>
+                <p className="text-[10px] text-white/40">
+                  UserEmail: {user?.email ?? "none"} · isAnonymous: {isAnonymous ? "true" : "false"}
                 </p>
                 {authError && !user ? (
                   <p className="text-[10px] text-red-600">AuthError: {authError}</p>

@@ -6,6 +6,7 @@ export type ArticleBlock =
 
 export type Article = {
   id: string;
+  slug: string;
   stance: "pro" | "con";
   title: string;
   author: string;
@@ -15,6 +16,7 @@ export type Article = {
 
 export type Topic = {
   id: string;
+  slug?: string;
   title: string;
   context: string;
   publishedAt: string; // ISO: YYYY-MM-DD
@@ -25,6 +27,7 @@ export type Topic = {
 export const mockTopics: Topic[] = [
   {
     id: "topic_tw_ban_xiaohongshu",
+    slug: "topic_tw_ban_xiaohongshu",
     title: "台灣是否應該封鎖小紅書?",
     publishedAt: "2025-12-31",
     category: "社會政治",
@@ -33,6 +36,7 @@ export const mockTopics: Topic[] = [
     articles: [
       {
         id: "article_tw_ban_xhs_pro_max_20260103",
+        slug: "article_tw_ban_xhs_pro_max_20260103",
         stance: "pro",
         title: "封鎖是保護資安的最低限度手段",
         author: "Max",
@@ -57,6 +61,7 @@ export const mockTopics: Topic[] = [
       },
       {
         id: "article_tw_ban_xhs_con_ricky_20260101",
+        slug: "article_tw_ban_xhs_con_ricky_20260101",
         stance: "con",
         title: "封鎖過度極端恐損資訊自由根基。",
         author: "Ricky",
@@ -81,6 +86,7 @@ export const mockTopics: Topic[] = [
       },
       {
         id: "article_tw_ban_xhs_pro_leo_20251225",
+        slug: "article_tw_ban_xhs_pro_leo_20251225",
         stance: "pro",
         title: "在資訊風險之前，別因便利而忽略了重點",
         author: "Leo",
@@ -108,6 +114,7 @@ export const mockTopics: Topic[] = [
 
   {
     id: "topic_tw_taiwan_sickness",
+    slug: "topic_tw_taiwan_sickness",
     title: "台灣真的得了嚴重的「台灣病」嗎？",
     publishedAt: "2025-06-28",
     category: "社會政治",
@@ -116,6 +123,7 @@ export const mockTopics: Topic[] = [
     articles: [
       {
         id: "article_tw_sickness_pro_peter_20250131",
+        slug: "article_tw_sickness_pro_peter_20250131",
         stance: "pro",
         title: "台灣真的病了，而且病得不輕",
         author: "Peter",
@@ -140,6 +148,7 @@ export const mockTopics: Topic[] = [
       },
       {
         id: "article_tw_sickness_con_cedric_20250723",
+        slug: "article_tw_sickness_con_cedric_20250723",
         stance: "con",
         title: "有落差合理，辦別只專注在你看到的面向",
         author: "Cedric",
@@ -167,6 +176,7 @@ export const mockTopics: Topic[] = [
 
   {
     id: "topic_relationship_moth_to_flame",
+    slug: "topic_relationship_moth_to_flame",
     title: "就算知道不被喜歡，還要不要飛蛾撲火？",
     publishedAt: "2025-03-14",
     category: "男女情感",
@@ -175,6 +185,7 @@ export const mockTopics: Topic[] = [
     articles: [
       {
         id: "article_relationship_moth_pro_thomas_20250514",
+        slug: "article_relationship_moth_pro_thomas_20250514",
         stance: "pro",
         title: "就算知道會受傷，也想為自己勇敢一次",
         author: "Thomas",
@@ -202,6 +213,7 @@ export const mockTopics: Topic[] = [
       },
       {
         id: "article_relationship_moth_con_ricky_20250328",
+        slug: "article_relationship_moth_con_ricky_20250328",
         stance: "con",
         title: "U deserve better",
         author: "Ricky",
@@ -322,6 +334,7 @@ export const mockTopics: Topic[] = [
 
   {
     id: "topic_campus_gpa_vs_club",
+    slug: "topic_campus_gpa_vs_club",
     title: "必修學分 vs. 必修社團？大學生是否應該專心讀書而非瘋狂玩社團？",
     publishedAt: "2025-06-28",
     category: "校園生活",
@@ -330,6 +343,7 @@ export const mockTopics: Topic[] = [
     articles: [
       {
         id: "article_campus_gpa_pro_juan_20251022",
+        slug: "article_campus_gpa_pro_juan_20251022",
         stance: "pro",
         title: "GPA 帶來最大選擇權。",
         author: "卷死你大卷哥",
@@ -363,6 +377,7 @@ export const mockTopics: Topic[] = [
       },
       {
         id: "article_campus_gpa_con_stephen_20250729",
+        slug: "article_campus_gpa_con_stephen_20250729",
         stance: "con",
         title: "能力、人脈與故事，才是真實競爭力。",
         author: "Stephen",
@@ -399,6 +414,7 @@ export const mockTopics: Topic[] = [
 
   {
     id: "topic_random_rich_kids_obligation",
+    slug: "topic_random_rich_kids_obligation",
     title: "富二代努力是義務嗎？",
     publishedAt: "2025-09-09",
     category: "奇思妙論",
@@ -407,6 +423,7 @@ export const mockTopics: Topic[] = [
     articles: [
       {
         id: "article_random_rich_pro_lucy_20251112",
+        slug: "article_random_rich_pro_lucy_20251112",
         stance: "pro",
         title: "貴族義務：富而不忘責任",
         author: "Lucy",
@@ -439,6 +456,7 @@ export const mockTopics: Topic[] = [
       },
       {
         id: "article_random_rich_con_karen_20250910",
+        slug: "article_random_rich_con_karen_20250910",
         stance: "con",
         title: "努力是選擇，不是道德責任",
         author: "Karen",

@@ -3,6 +3,7 @@ import type { Topic, Article } from "./types";
 export const topics: Topic[] = [
   {
     id: "topic-1",
+    slug: "topic-1",
     title: "都市道路是否應全面實施 30 km/h 限速？",
     tag: "交通安全",
     happenedAt: "2024-07-02",
@@ -11,6 +12,7 @@ export const topics: Topic[] = [
   },
   {
     id: "topic-2",
+    slug: "topic-2",
     title: "政府是否應補貼生成式 AI 產業？",
     tag: "科技產業",
     happenedAt: "2024-07-15",
@@ -19,6 +21,7 @@ export const topics: Topic[] = [
   },
   {
     id: "topic-3",
+    slug: "topic-3",
     title: "公立高中是否應取消早自習？",
     tag: "教育政策",
     happenedAt: "2024-08-01",

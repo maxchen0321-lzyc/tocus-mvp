@@ -1,5 +1,6 @@
 export type Topic = {
   id: string;
+  slug?: string;
   title: string;
   tag: string;
   happenedAt: string;
