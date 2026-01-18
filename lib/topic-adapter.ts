@@ -9,6 +9,7 @@ const summaryFromContext = (context: string) => {
 export function mapNotionTopicToUi(topic: NotionTopic): UiTopic {
   return {
     id: topic.id,
+    slug: topic.slug,
     title: topic.title,
     tag: topic.category,
     happenedAt: topic.publishedAt,

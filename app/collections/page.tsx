@@ -72,8 +72,12 @@ export default function CollectionsPage() {
     });
   };
 
-  const list = topics.filter((topic) => items.includes(topic.id));
-  const missingTopicIds = items.filter((topicId) => !topics.some((topic) => topic.id === topicId));
+  const topicBySlug = new Map(topics.map((topic) => [topic.slug, topic]));
+  const rows = items.map((topicId) => ({
+    topicId,
+    topic: topicBySlug.get(topicId) ?? topics.find((topic) => topic.id === topicId) ?? null
+  }));
+  const missingTopicIds = rows.filter((row) => !row.topic).map((row) => row.topicId);
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-4 px-4 py-6 text-sm">
@@ -86,6 +90,14 @@ export default function CollectionsPage() {
       {authNotice ? <p className="text-xs text-amber-200">{authNotice}</p> : null}
       {collectionError && !showDebug ? (
         <p className="text-xs text-red-300">讀取收藏失敗：{collectionError}</p>
+      ) : null}
+      {showDebug && canUseCollections ? (
+        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] text-white/70">
+          <p>Raw topic_ids: {items.join(", ") || "none"}</p>
+          {missingTopicIds.length > 0 ? (
+            <p className="text-amber-200">Missing topic_ids: {missingTopicIds.join(", ")}</p>
+          ) : null}
+        </div>
       ) : null}
       {showDebug ? (
         <>
@@ -112,44 +124,26 @@ export default function CollectionsPage() {
       ) : null}
       {!canUseCollections ? (
         <div className="glass rounded-2xl p-4 text-white/60">登入後即可使用收藏功能</div>
-      ) : list.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="glass rounded-2xl p-4 text-white/60">尚未收藏任何議題</div>
       ) : (
         <div className="space-y-2">
-          {showDebug ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] text-white/70">
-              <p>Raw topic_ids: {items.join(", ") || "none"}</p>
-              {missingTopicIds.length > 0 ? (
-                <p className="text-amber-200">
-                  Missing topic_ids: {missingTopicIds.join(", ")}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-          {list.map((topic) => (
-            <div key={topic.id} className="glass flex items-center justify-between rounded-xl px-4 py-3">
+          {rows.map(({ topicId, topic }) => (
+            <div
+              key={topicId}
+              className="glass flex items-center justify-between rounded-xl px-4 py-3"
+            >
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{topic.title}</p>
-                <p className="text-xs text-white/60">{topic.tag}</p>
+                <p className="truncate text-sm font-semibold">
+                  {topic ? topic.title : "(找不到議題資料)"}
+                </p>
+                <p className="text-xs text-white/60">{topic ? topic.tag : "-"}</p>
               </div>
-              <button className="text-xs text-red-300" onClick={() => handleRemove(topic.id)}>
+              <button className="text-xs text-red-300" onClick={() => handleRemove(topicId)}>
                 移除收藏
               </button>
             </div>
           ))}
-          {showDebug
-            ? missingTopicIds.map((topicId) => (
-                <div
-                  key={topicId}
-                  className="glass flex items-center justify-between rounded-xl px-4 py-3 text-xs text-amber-200"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate">找不到議題資料</p>
-                    <p className="text-[10px] text-amber-200/80">{topicId}</p>
-                  </div>
-                </div>
-              ))
-            : null}
         </div>
       )}
       <AuthModal

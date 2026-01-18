@@ -13,6 +13,7 @@ export type Article = {
 
 export type Topic = {
   id: string;
+  slug: string;
   title: string;
   context: string;
   publishedAt: string;
