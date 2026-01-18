@@ -12,16 +12,20 @@ export default function CollectionsPage() {
   const { user, anonymousId, authReady, authError, supabaseHost, signOut } = useAuth();
   const [items, setItems] = useState<string[]>([]);
   const [debug, setDebug] = useState<string>("pending");
+  const [collectionError, setCollectionError] = useState<string | null>(null);
   const [authNotice, setAuthNotice] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const isSignedIn = isPermanentUser(user);
   const canUseCollections = isSignedIn;
+  const showDebug =
+    process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEBUG === "1";
 
   useEffect(() => {
     if (!authReady) return;
     if (!isPermanentUser(user)) {
       setItems([]);
       setDebug("source=none count=0 owner=none error=auth_required");
+      setCollectionError(null);
       setAuthNotice("登入後即可使用收藏功能");
       setAuthOpen(true);
       return;
@@ -36,6 +40,7 @@ export default function CollectionsPage() {
       setDebug(
         `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
+      setCollectionError(result.error);
     });
   }, [authReady, isSignedIn, user]);
 
@@ -47,6 +52,7 @@ export default function CollectionsPage() {
       setDebug(
         `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
+      setCollectionError(result.error);
     }
     await trackEvent("collection_remove", {
       userId: user.id,
@@ -66,15 +72,25 @@ export default function CollectionsPage() {
         </Link>
       </div>
       {authNotice ? <p className="text-xs text-amber-200">{authNotice}</p> : null}
-      <p className="text-[10px] text-white/40">ColDebug: {debug}</p>
-      <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
-      <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
-      <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
-      <p className="text-[10px] text-white/40">
-        SupabaseHost: {supabaseHost ?? "unknown"}
-      </p>
-      {authError && !user ? (
-        <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+      {collectionError && !showDebug ? (
+        <p className="text-xs text-red-300">讀取收藏失敗：{collectionError}</p>
+      ) : null}
+      {showDebug ? (
+        <>
+          <p className="text-[10px] text-white/40">ColDebug: {debug}</p>
+          <p className="text-[10px] text-white/40">AuthReady: {authReady ? "true" : "false"}</p>
+          <p className="text-[10px] text-white/40">UserId: {user?.id ?? "none"}</p>
+          <p className="text-[10px] text-white/40">AnonymousId: {anonymousId}</p>
+          <p className="text-[10px] text-white/40">
+            SupabaseHost: {supabaseHost ?? "unknown"}
+          </p>
+          {authError && !user ? (
+            <p className="text-[10px] text-red-300">AuthError: {authError}</p>
+          ) : null}
+          {collectionError ? (
+            <p className="text-[10px] text-red-300">ColError: {collectionError}</p>
+          ) : null}
+        </>
       ) : null}
       {!canUseCollections ? (
         <div className="glass rounded-2xl p-4 text-white/60">登入後即可使用收藏功能</div>

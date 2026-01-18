@@ -19,6 +19,8 @@ export default function HomeClient() {
   const [stanceOpen, setStanceOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [collectionDebug, setCollectionDebug] = useState<string>("pending");
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [collectionDiag, setCollectionDiag] = useState<string | null>(null);
   const impressions = useRef(new Set<string>());
   const swipeTopics = getSwipeTopics();
   const topicDiagnostics = getTopicSourceDiagnostics();
@@ -31,6 +33,7 @@ export default function HomeClient() {
     if (!isPermanentUser(user)) {
       setCollectionIds([]);
       setCollectionDebug("source=none count=0 owner=none error=auth_required");
+      setCollectionError(null);
       return;
     }
     getCollections(user.id).then((result) => {
@@ -38,6 +41,7 @@ export default function HomeClient() {
       setCollectionDebug(
         `source=${result.source} count=${result.data.length} owner=${user.id} error=${result.error ?? "none"}`
       );
+      setCollectionError(result.error);
     });
   }, [authReady, isSignedIn, user]);
 
@@ -128,6 +132,12 @@ export default function HomeClient() {
       return;
     }
     const userId = user.id;
+    const payload = { topic_id: currentTopic.id, user_id: userId };
+    if (showDebug) {
+      setCollectionDiag(
+        `user=${userId} email=${user.email ?? "none"} payload=${JSON.stringify(payload)}`
+      );
+    }
     const action = collectionIds.includes(currentTopic.id) ? "remove" : "add";
     const result =
       action === "add"
@@ -138,6 +148,20 @@ export default function HomeClient() {
       setCollectionDebug(
         `source=${result.source} count=${result.data.length} owner=${userId} error=${result.error ?? "none"}`
       );
+      setCollectionError(result.error);
+      if (showDebug) {
+        setCollectionDiag((prev) =>
+          [
+            prev,
+            `response=${JSON.stringify({
+              error: result.error ?? null,
+              debug: result.debug ?? null
+            })}`
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
+      }
     }
     await trackEvent(action === "add" ? "collection_add" : "collection_remove", {
       userId,
@@ -181,6 +205,12 @@ export default function HomeClient() {
             {showDebug ? (
               <>
                 <p className="text-[10px] text-white/40">ColDebug: {collectionDebug}</p>
+                {collectionError ? (
+                  <p className="text-[10px] text-red-300">ColError: {collectionError}</p>
+                ) : null}
+                {collectionDiag ? (
+                  <p className="text-[10px] text-white/40">ColDiag: {collectionDiag}</p>
+                ) : null}
                 <p className="text-[10px] text-white/40">
                   AuthReady: {authReady ? "true" : "false"}
                 </p>

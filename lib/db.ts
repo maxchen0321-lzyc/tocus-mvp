@@ -24,28 +24,49 @@ export type DbResult<T> = {
   data: T;
   error: string | null;
   source: "supabase" | "local";
+  debug?: {
+    action: "select" | "insert" | "delete";
+    payload?: Record<string, unknown>;
+    error?: string | null;
+  };
 };
 
 export async function getCollections(
   userId: string | null
 ): Promise<DbResult<CollectionRecord[]>> {
   if (!hasSupabaseConfig) {
-    return { data: [], error: "missing_supabase_keys", source: "local" };
+    return {
+      data: [],
+      error: "missing_supabase_keys",
+      source: "local",
+      debug: { action: "select", error: "missing_supabase_keys" }
+    };
   }
   if (!userId) {
-    return { data: [], error: "missing_user_id", source: "supabase" };
+    return {
+      data: [],
+      error: "missing_user_id",
+      source: "supabase",
+      debug: { action: "select", error: "missing_user_id" }
+    };
   }
   const { data, error } = await supabaseBrowser
     .from("collections")
-    .select("*")
-    .eq("user_id", userId);
+    .select("topic_id, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
   if (error) {
     console.error("getCollections error", error);
   }
   return {
     data: (data ?? []) as CollectionRecord[],
     error: error?.message ?? null,
-    source: "supabase"
+    source: "supabase",
+    debug: {
+      action: "select",
+      payload: { user_id: userId },
+      error: error?.message ?? null
+    }
   };
 }
 
@@ -55,10 +76,20 @@ export async function addCollection(
 ): Promise<DbResult<CollectionRecord[]>> {
   console.log("addCollection called", { topicId, userId });
   if (!hasSupabaseConfig) {
-    return { data: [], error: "missing_supabase_keys", source: "local" };
+    return {
+      data: [],
+      error: "missing_supabase_keys",
+      source: "local",
+      debug: { action: "insert", error: "missing_supabase_keys" }
+    };
   }
   if (!userId) {
-    return { data: [], error: "missing_user_id", source: "supabase" };
+    return {
+      data: [],
+      error: "missing_user_id",
+      source: "supabase",
+      debug: { action: "insert", error: "missing_user_id" }
+    };
   }
   const record = {
     topic_id: topicId,
@@ -69,9 +100,26 @@ export async function addCollection(
     .upsert(record, { onConflict: "user_id,topic_id" });
   if (insertError) {
     console.error("addCollection insert error", insertError);
-    return { data: [], error: insertError.message, source: "supabase" };
+    return {
+      data: [],
+      error: insertError.message,
+      source: "supabase",
+      debug: {
+        action: "insert",
+        payload: record,
+        error: insertError.message
+      }
+    };
   }
-  return getCollections(userId);
+  const result = await getCollections(userId);
+  return {
+    ...result,
+    debug: {
+      action: "insert",
+      payload: record,
+      error: insertError?.message ?? null
+    }
+  };
 }
 
 export async function removeCollection(
@@ -79,10 +127,20 @@ export async function removeCollection(
   userId: string | null
 ): Promise<DbResult<CollectionRecord[]>> {
   if (!hasSupabaseConfig) {
-    return { data: [], error: "missing_supabase_keys", source: "local" };
+    return {
+      data: [],
+      error: "missing_supabase_keys",
+      source: "local",
+      debug: { action: "delete", error: "missing_supabase_keys" }
+    };
   }
   if (!userId) {
-    return { data: [], error: "missing_user_id", source: "supabase" };
+    return {
+      data: [],
+      error: "missing_user_id",
+      source: "supabase",
+      debug: { action: "delete", error: "missing_user_id" }
+    };
   }
   const { error } = await supabaseBrowser
     .from("collections")
@@ -90,9 +148,26 @@ export async function removeCollection(
     .match({ topic_id: topicId, user_id: userId });
   if (error) {
     console.error("removeCollection error", error);
-    return { data: [], error: error.message, source: "supabase" };
+    return {
+      data: [],
+      error: error.message,
+      source: "supabase",
+      debug: {
+        action: "delete",
+        payload: { topic_id: topicId, user_id: userId },
+        error: error.message
+      }
+    };
   }
-  return getCollections(userId);
+  const result = await getCollections(userId);
+  return {
+    ...result,
+    debug: {
+      action: "delete",
+      payload: { topic_id: topicId, user_id: userId },
+      error: error?.message ?? null
+    }
+  };
 }
 
 export async function saveStance(
